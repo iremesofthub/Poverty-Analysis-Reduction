@@ -238,17 +238,22 @@ export function programmeCoops(state, beneficiaries) {
 }
 
 // The area a signed-in leader works in, read from the account's scope text.
-export function leaderScope(demoUser) {
-  const role = demoUser?.role;
-  const scope = String(demoUser?.scope || "");
+// When Supabase is configured the profile row holds district/sector/cell;
+// demo mode stores them on demoUser. Both are accepted.
+export function leaderScope(demoUser, profile = null) {
+  const role = demoUser?.role ?? profile?.role;
+  const scope = String(demoUser?.scope || profile?.scope || "");
   if (role === "platform_admin") return { role, district: null, sector: null, canManage: true, all: true, label: "All districts" };
-  if (role === "gov_district") { const district = scope.replace(/\s*district\s*$/i, "").trim(); return { role, district, sector: null, canManage: false, all: false, label: `${district} District` }; }
+  if (role === "gov_district") {
+    const district = profile?.district ?? scope.replace(/\s*district\s*$/i, "").trim();
+    return { role, district, sector: null, canManage: false, all: false, label: `${district} District` };
+  }
   const [first, second] = scope.split(",").map((part) => part.trim());
-  if (role === "gov_sector") return { role, district: second || null, sector: first || null, canManage: false, all: false, label: `${first} sector, ${second}` };
+  if (role === "gov_sector") return { role, district: (profile?.district ?? second) || null, sector: (profile?.sector ?? first) || null, canManage: false, all: false, label: `${first} sector, ${second}` };
   if (role === "gov_cell") {
-    const sector = second || null;
-    const district = BENEFICIARIES.find((item) => item.sector === sector)?.district || null;
-    return { role, district, sector, cell: first || null, canManage: false, all: false, label: `${first} cell, ${sector} sector` };
+    const sector = (profile?.sector ?? second) || null;
+    const district = (profile?.district ?? BENEFICIARIES.find((item) => item.sector === sector)?.district) || null;
+    return { role, district, sector, cell: (profile?.cell ?? first) || null, canManage: false, all: false, label: `${first} cell, ${sector} sector` };
   }
   return { role, district: null, sector: null, canManage: false, all: false, label: "" };
 }

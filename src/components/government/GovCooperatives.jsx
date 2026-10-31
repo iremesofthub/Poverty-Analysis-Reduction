@@ -2,6 +2,7 @@ import React, { useMemo, useState } from "react";
 import { Eye, HeartPulse, Inbox, Users, UsersRound } from "lucide-react";
 import SidePanel from "@/components/investigation/SidePanel";
 import { useDemoAuth } from "@/lib/DemoAuthContext";
+import { useAuth } from "@/lib/AuthContext";
 import { leaderScope, useCooperatives } from "@/lib/cooperatives";
 import { ago } from "@/components/requests/bits";
 import { useTranslation } from "react-i18next";
@@ -54,7 +55,8 @@ function Detail({ coop, store, onClose }) {
 
 export default function GovCooperatives() {
   const { demoUser } = useDemoAuth();
-  const scope = leaderScope(demoUser);
+  const { profile } = useAuth();
+  const scope = leaderScope(demoUser, profile);
   const store = useCooperatives();
   const allDistricts = useMemo(() => [...new Set(store.coops.map((coop) => coop.district))].sort(), [store.coops]);
   const [districtChoice, setDistrictChoice] = useState("Nyaruguru");
