@@ -1,6 +1,7 @@
 import React, { createContext, useCallback, useContext, useState } from "react";
 import { useAuth } from "@/lib/AuthContext";
-import { signOutOfDatabase } from "@/lib/supabaseClient";
+import { signOutOfDatabase, supabaseConfigured } from "@/lib/supabaseClient";
+import { resolveRole } from "@/lib/roleResolution.js";
 
 const KEY = "ireme_demo_user";
 const DemoAuthContext = createContext(null);
@@ -22,7 +23,7 @@ export const DemoAuthProvider = ({ children }) => {
   const logout = useCallback(() => {
     localStorage.removeItem(KEY);
     setDemoUser(null);
-    signOutOfDatabase().finally(() => { window.location.href = "/login"; });
+    signOutOfDatabase().finally(() => { window.location.href = `${import.meta.env.BASE_URL}login`; });
   }, []);
 
   return (
@@ -38,6 +39,14 @@ export const useDemoAuth = () => {
 
 export const useRole = () => {
   const { demoUser } = useDemoAuth();
-  const { isAuthenticated } = useAuth();
-  return demoUser?.role ?? (isAuthenticated ? "nisr_analyst" : null);
+  const { profile } = useAuth();
+  // A browser-stored demo role is only consulted when no database is configured. Once Supabase is in play
+  // the role comes from the signed-in account's profile row, so editing `ireme_demo_user` in devtools
+  // cannot upgrade a hosted deployment's access. The rule itself lives in `roleResolution.js`, where
+  // `roleResolution.test.mjs` proves both branches offline.
+  return resolveRole({
+    supabaseConfigured,
+    profileRole: profile?.role ?? null,
+    demoRole: demoUser?.role ?? null,
+  });
 };

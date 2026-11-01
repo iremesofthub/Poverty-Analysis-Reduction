@@ -1,6 +1,7 @@
 import React from "react";
 import { X } from "lucide-react";
 import { formatInterval, observationsFor, reasonToReview } from "@/lib/povertySupport";
+import { contrastVerdict, reliabilityOf } from "@/lib/districtUncertainty";
 import { InvestigateLink, Pill } from "./shared";
 import InfoTip, { HELP } from "./InfoTip";
 
@@ -30,6 +31,7 @@ export default function DistrictPanel({ row, national, reviewList, onSelect }) {
       </div>
     );
   }
+  const verdict = contrastVerdict(row.povertyContrast);
   return (
     <section aria-label={`${row.name} details`} className="rounded-lg border border-hairline bg-white p-4">
       <div className="flex items-start justify-between gap-2">
@@ -41,11 +43,15 @@ export default function DistrictPanel({ row, national, reviewList, onSelect }) {
       </div>
       <div className="mt-2 flex flex-wrap gap-1.5"><Pill tone={row.marker.tone}>{row.marker.label}</Pill><Pill tone={row.quality.tone}>{row.quality.label}</Pill></div>
       <div className="mt-2">
-        <Stat label="Poverty rate" help={HELP.poverty}>{row.poverty.toFixed(1)}%</Stat>
-        <Stat label="VUP participation" help={HELP.vup}>{row.vupAmongPoor.toFixed(1)}%</Stat>
+        <Stat label="Poverty rate" help={HELP.poverty}>{row.poverty.toFixed(1)}%<span className="block text-[10.5px] font-normal tabular-nums text-sub">{formatInterval(row.povertyInterval)}</span></Stat>
+        <Stat label="VUP participation" help={HELP.vup}>{row.vupAmongPoor.toFixed(1)}%<span className="block text-[10.5px] font-normal tabular-nums text-sub">{formatInterval(row.vupInterval)}</span></Stat>
         <Stat label="Sample size" help={HELP.sample}>{row.samplePoorHouseholds} poor / {row.sampleHouseholds} households</Stat>
-        <Stat label="Confidence interval" help={HELP.interval}>{formatInterval(row.vupInterval)}</Stat>
+        <Stat label="Reliability" help={HELP.interval}>{[reliabilityOf(row.povertyEvidence)?.label ?? "Not assessed", reliabilityOf(row.vupEvidence)?.label ?? "Not assessed"].join(" · ")}</Stat>
         <Stat label="National reference" help={HELP.national}>{national.poverty.toFixed(1)}% · {national.vupAmongPoor.toFixed(1)}%</Stat>
+      </div>
+      <div className="mt-2 rounded-lg border border-hairline bg-[#FAFBFD] p-2.5">
+        <p className="text-[11px] font-medium text-ink">{verdict.label}</p>
+        <p className="mt-1 text-[10.5px] leading-relaxed text-sub">{verdict.detail}</p>
       </div>
       <div className="mt-3">
         <p className="text-[10.5px] font-medium uppercase tracking-[0.06em] text-[#8A94A6]">What the data shows</p>

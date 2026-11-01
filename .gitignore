@@ -50,5 +50,21 @@ dist-ssr
 /skills-lock.json
 /_work*/
 
+# Test artefacts (Playwright reports and Supabase CLI scratch state)
+playwright-report/
+test-results/
+supabase/.temp/
+
 __pycache__/
 *.pyc
+
+.vercel
+.env*
+
+# Licensed NISR archive staged for the engine image; never commit microdata
+/engine/.ship/
+
+# Local provisioning scripts embed demo credentials; never commit them
+/scripts/provision_demo_accounts.mjs
+/scripts/unify_demo_passwords.mjs
+/scripts/fix_programme_owners.mjs

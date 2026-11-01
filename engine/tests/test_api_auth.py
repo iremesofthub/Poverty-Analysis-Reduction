@@ -72,6 +72,19 @@ class GovernedApi(unittest.TestCase):
         payload = {**self.signer.payload, 'sub': 'unrelated-analyst'}
         self.assertEqual(self.request(payload=payload).status_code, 404)
 
+    def test_create_requires_national_scope_and_existing_dataset_permission_before_queue(self):
+        payload = copy.deepcopy(self.signer.payload)
+        payload['app_metadata']['national_scope'] = True
+        response = self.client.post('/v1/investigations', json={
+            'dataset_id': 'eicv7', 'dataset_version': '1', 'permission_id': 'not-registered',
+            'purpose': 'research', 'indicator_id': 'poverty', 'definition_version': '1',
+        }, headers={'Authorization': self.signer.token(payload), 'Idempotency-Key': 'new-run-test-key'})
+        self.assertEqual(response.status_code, 403, response.text)
+        self.assertEqual(response.json()['error_code'], 'DATASET_PERMISSION_REQUIRED')
+        self.assertEqual(self.client.get('/v1/jobs/run-placeholder',
+            headers={'Authorization': self.signer.token(payload)}).status_code, 404)
+        self.assertEqual(self.catalog.db.execute('SELECT count(*) FROM revisions WHERE kind="scientific-run"').fetchone()[0], 1)
+
     def test_unapproved_facts_and_revoked_dataset_cannot_bypass_read_boundary(self):
         response = self.request('/facts')
         self.assertEqual(response.status_code, 409)

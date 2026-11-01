@@ -1,5 +1,14 @@
 import aggregates from "@/data/dashboard-eicv7-aggregates.json";
+import uncertaintyDocument from "@/data/dashboard-eicv7-uncertainty.json";
 import { DISTRICTS } from "@/data/nisr";
+import { reader as uncertaintyReader } from "@/lib/districtUncertainty";
+
+// The join is created once from the derived artifact. `dashboard-eicv7-aggregates.json`
+// holds the published-looking rounded values the dashboard shows;
+// `dashboard-eicv7-uncertainty.json` holds the design-based intervals, contrasts and
+// reliability grades produced by `engine/ireme/survey.py`.
+const uncertainty = uncertaintyReader(uncertaintyDocument);
+const { withUncertainty, withNationalUncertainty } = uncertainty;
 
 // NISR EICV7 Poverty Profile, Annex B: EICV5 rates modelled onto the EICV7
 // methodology. The old, directly observed EICV5 rates in nisr.js are not
@@ -32,7 +41,7 @@ const PUBLISHED_DECREASE = {
 export const DASHBOARD_SOURCES = {
   poverty: "https://www.statistics.gov.rw/sites/default/files/documents/2025-07/EICV7_Main%20Indicator%20Report.pdf",
   change: "https://www.statistics.gov.rw/sites/default/files/documents/2025-04/EICV7_Poverty%20Profile.pdf",
-  financial: "https://www.statistics.gov.rw/sites/default/files/documents/2024-09/Rwanda-Finscope-2024-Report_compressed.pdf",
+  financial: "https://microdata.statistics.gov.rw/index.php/catalog/120/download/1085",
 };
 
 // Published national FinScope 2024 Access Strand. The four categories are
@@ -44,10 +53,14 @@ export const FINANCIAL_ACCESS_NATIONAL = [
   { key: "excluded", label: "Excluded", value: 4, color: "#E3E8EE" },
 ];
 
-export const NATIONAL_EICV7 = aggregates.national;
+export const NATIONAL_EICV7 = withNationalUncertainty(aggregates.national);
 
 const byName = new Map(aggregates.districts.map((row) => [row.name, row]));
 
+// `withUncertainty` attaches the design-based interval for a district only when
+// the derived point still matches the value shown below. If the two artifacts
+// ever come from different runs the interval is dropped and the UI says
+// "Not calculated" rather than inventing precision.
 export const DASHBOARD_DISTRICTS = DISTRICTS.map(({ name, province }) => {
   const evidence = byName.get(name);
   const previous = MODELLED_2016_17[name];
@@ -55,7 +68,18 @@ export const DASHBOARD_DISTRICTS = DISTRICTS.map(({ name, province }) => {
   if (!evidence || previous === undefined || publishedDecrease === undefined) {
     throw new Error(`Missing dashboard evidence for ${name}`);
   }
-  return { ...evidence, province, previousModelled: previous, publishedDecrease };
+  return withUncertainty({ ...evidence, province, previousModelled: previous, publishedDecrease });
 });
 
 export const EICV7_METHOD = aggregates.method;
+
+// Design-based uncertainty metadata (UPG-01): how these intervals were built and
+// what is still awaiting independent scientific review.
+export const EICV7_UNCERTAINTY = {
+  provenance: uncertaintyDocument.provenance,
+  method: uncertaintyDocument.method,
+  status: uncertaintyDocument.status,
+  reliabilityBands: uncertaintyDocument.reliabilityBands,
+};
+
+export { uncertainty };

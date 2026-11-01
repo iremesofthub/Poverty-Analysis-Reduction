@@ -46,6 +46,26 @@ export function reportToMarkdown(report, meta = {}) {
       ...check.rows.map((row) => `| ${row.indicator} | ${row.internal} | ${row.official} | ${row.url ? `[${row.source}](${row.url})` : row.source} | ${row.label} |`), "");
     lines.push(`**Confirmed:** ${check.lists.verified || "None"}  `, `**Discrepancies:** ${check.lists.discrepancies || "None"}  `, `**Cannot be compared (different definitions):** ${check.lists.mismatches || "None"}  `,
       `**Not checked against any official figure:** ${check.lists.unverified || "None"}  `, `**The engine's own analyses:** ${check.lists.original || "None"}`, "");
+    const quality = check.quality;
+    if (quality?.available) {
+      // The same derived facts the screen shows, so the exported document cannot disagree with the report it came from.
+      lines.push("### Evidence quality", "",
+        `Recounted from the ${quality.totals.registry} checks recorded by the engine${quality.generatedAt ? `, run on ${String(quality.generatedAt).slice(0, 10)}` : ""}. Nothing below is typed in.`, "",
+        ...bullets(quality.statuses.map(({ label, count }) => `${label}: ${count}`)), "");
+      if (quality.countsMatchSummary === false) lines.push("> The figures recorded for this run and the summary attached to them do not agree. The counts above recount the recorded checks; the summary claims a different total. Read the table, not the summary.", "");
+      if (quality.unexpectedStatuses.length) lines.push(`- ${quality.unexpectedStatuses.length} check carries a status this document has no label for (${quality.unexpectedStatuses.join(", ")}); it is counted in the total and listed in the table.`, "");
+      lines.push("", ...bullets([
+        `Official documents read: ${quality.sources.retrieved} of ${quality.sources.total}${quality.periods.length ? `; survey period: ${quality.periods.join(", ")}` : ""}`,
+        quality.sources.failedToRetrieve.length ? `Could not be read: ${quality.sources.failedToRetrieve.map((item) => `${item.title} (${item.error || "no reason recorded"})`).join("; ")}` : "Could not be read: none",
+        quality.sources.claimsWithoutSource.length ? `Figures with no published document behind them: ${quality.sources.claimsWithoutSource.join("; ")}` : "Every figure carries a source or is listed as the engine's own analysis",
+        `Definitions line up enough to compare: ${quality.comparability.comparable} comparable, ${quality.comparability.notComparable} not comparable${quality.comparability.unknown ? `, ${quality.comparability.unknown} not stated` : ""}`,
+        `Where the numbers come from: ${quality.estimates.observed} calculated by the engine from the microdata, ${quality.estimates.modelled} copied from a published modelled estimate and not recomputed here`,
+        `Method review: ${quality.checks.status === "not_run" ? "not attempted for this run" : `${quality.checks.status} — ${quality.checks.passed} of ${quality.checks.total} checks passed${quality.checks.needsReview ? `, ${quality.checks.needsReview} needs review` : ""}`}`,
+        `Human scientific review: ${quality.approvals.note}`,
+        quality.unresolved ? `Unresolved: ${quality.unresolved} (${quality.unresolvedItems.join(", ") || "no item named"})` : "Unresolved: none",
+        `${quality.limitations} stated limitations and ${quality.auditSteps} audit entries travel with this report. A passing count is not a release decision: only the governed API can mark a report published.`,
+      ]), "");
+    }
     if (check.corrections.length) lines.push("### Corrected during review", "", ...check.corrections.flatMap((item) => [`- Was: ${item.original}`, `  Now: ${item.corrected}`, `  Why: ${item.reason}`]), "");
     if (check.decomposition) lines.push("### Review of the gap-splitting method (Oaxaca-Blinder)", "", ...bullets(check.decomposition.checks.map((item) => `${item.check}: ${item.passed ? "passed" : "needs review"} (${item.observed})`)), "", ...bullets(check.decomposition.assumptions), "");
     lines.push("### Official documents read", "", ...bullets(check.sources.map((item) => `${item.url ? `[${item.title}](${item.url})` : item.title}${item.available ? `, version ${item.version}, retrieved ${String(item.retrieved_at).slice(0, 10)}` : ` (could not be retrieved: ${item.error})`}`)), "");

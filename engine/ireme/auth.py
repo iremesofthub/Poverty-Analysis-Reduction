@@ -162,8 +162,9 @@ DEMO_PERMISSIONS = {
     **PERMISSIONS,
     'investigation:create': {'nisr_analyst', 'platform_admin', 'test-statistician', 'test-privacy-officer', 'test-release-authority'},
     'investigation:read': {'nisr_analyst', 'platform_admin', 'gov_district', 'statistical_reviewer', 'privacy_reviewer', 'release_reviewer', 'test-statistician', 'test-privacy-officer', 'test-release-authority', 'hackathon-viewer'},
-    'report:review': {'statistical_reviewer', 'privacy_reviewer', 'release_reviewer', 'test-statistician', 'test-privacy-officer', 'test-release-authority'},
-    'report:publish': {'publication_authority', 'test-release-authority'},
+    # Demo lets the analyst drive the whole lifecycle alone when human approvals are bypassed.
+    'report:review': {'statistical_reviewer', 'privacy_reviewer', 'release_reviewer', 'test-statistician', 'test-privacy-officer', 'test-release-authority', 'nisr_analyst', 'platform_admin'},
+    'report:publish': {'publication_authority', 'test-release-authority', 'nisr_analyst', 'platform_admin'},
 }
 
 
@@ -180,10 +181,14 @@ _mfa_enabled_override: bool | None = None  # None = use profile default, True/Fa
 
 
 def _get_mfa_state(profile: ProfileConfig) -> bool:
-    """Get current MFA enabled state, considering override."""
+    """Get current MFA enabled state, considering override.
+
+    The override only exists where the admin toggle exists (the demo profile), so a
+    demo toggle can never weaken or strengthen GOVERNED_PRODUCTION.
+    """
     global _mfa_enabled_override
     with _mfa_state_lock:
-        if _mfa_enabled_override is not None:
+        if _mfa_enabled_override is not None and profile.admin_mfa_toggle:
             return _mfa_enabled_override
         return profile.mfa_enabled
 
@@ -249,6 +254,10 @@ def authorize(principal, action, tenant, district=None, author=None, profile: Pr
     
     # AAL2 requirement - controlled by MFA toggle state
     if action in ('report:review', 'report:publish'):
+        # Demo freedom: with human approvals bypassed the analyst may review and publish
+        # alone, without MFA or a second identity.
+        if profile.bypass_human_approvals:
+            return principal
         is_test = is_test_identity(principal, profile)
         mfa_enabled = _get_mfa_state(profile)
         
@@ -263,32 +272,6 @@ def authorize(principal, action, tenant, district=None, author=None, profile: Pr
             raise AuthorizationError('Independent reviewer required')
     
     return principal
-
-
-# Base permissions (production)
-PERMISSIONS = {
-    'investigation:create': {'nisr_analyst', 'platform_admin'},
-    'investigation:read': {'nisr_analyst', 'platform_admin', 'gov_district', 'statistical_reviewer', 'privacy_reviewer', 'release_reviewer'},
-    'report:review': {'statistical_reviewer', 'privacy_reviewer', 'release_reviewer'},
-    'report:publish': {'publication_authority'},
-    'provider:health': {'platform_admin'},
-}
-
-# Hackathon demo adds test roles
-DEMO_PERMISSIONS = {
-    **PERMISSIONS,
-    'investigation:create': {'nisr_analyst', 'platform_admin', 'test-statistician', 'test-privacy-officer', 'test-release-authority'},
-    'investigation:read': {'nisr_analyst', 'platform_admin', 'gov_district', 'statistical_reviewer', 'privacy_reviewer', 'release_reviewer', 'test-statistician', 'test-privacy-officer', 'test-release-authority', 'hackathon-viewer'},
-    'report:review': {'statistical_reviewer', 'privacy_reviewer', 'release_reviewer', 'test-statistician', 'test-privacy-officer', 'test-release-authority'},
-    'report:publish': {'publication_authority', 'test-release-authority'},
-}
-
-
-def _get_permissions(profile: ProfileConfig) -> dict:
-    """Get permissions for the active profile."""
-    if profile.name.value == "HACKATHON_DEMO":
-        return DEMO_PERMISSIONS
-    return PERMISSIONS
 
 
 def create_test_identities() -> list[dict]:

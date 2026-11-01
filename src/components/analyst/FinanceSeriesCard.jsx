@@ -4,7 +4,8 @@ import Card from "@/components/analyst/Card";
 import DataNote from "@/components/analyst/support/DataNote";
 import { Basis, Legend, Segmented, ViewTable, tooltipStyle } from "@/components/analyst/TrendBits";
 import { DASHBOARD_SOURCES } from "@/data/dashboardEvidence";
-import { FINSCOPE_SERIES, SERIES_PROVINCES } from "@/data/dashboardTrends";
+import { selectNationalSeries, selectProvinceSeries } from "@/data/financialInclusion";
+import { EvidenceError, EvidenceLoading, EvidenceMissing, useActiveEvidence } from "@/lib/useFinancialInclusionData";
 
 const LINES = [
   { key: "formal", label: "Formally served", color: "#14B8A6", place: "top" },
@@ -18,10 +19,6 @@ const MEASURES = [
   { key: "banked", label: "Banked" },
 ];
 const comparable = ["2016", "2020", "2024"];
-const DATA = comparable.map((year) => {
-  const item = FINSCOPE_SERIES.series.find((entry) => entry.key === year);
-  return { year, formal: item.formal, informal_only: item.informal_only, excluded: item.excluded };
-});
 function Finscope2012Note() {
   return (
     <>
@@ -37,10 +34,18 @@ const tone = (label = "") => (label.startsWith("Clear") ? "bg-emerald-50 text-em
 
 export default function FinanceSeriesCard({ rows }) {
   const [measure, setMeasure] = useState("excluded");
+  const evidence = useActiveEvidence();
+  const series = useMemo(() => selectNationalSeries(evidence.observations), [evidence.observations]);
+  const dbProvinces = useMemo(() => selectProvinceSeries(evidence.observations), [evidence.observations]);
   const provinces = useMemo(() => new Set(rows.map((row) => row.province)), [rows]);
-  const visible = SERIES_PROVINCES.filter((item) => provinces.has(item.province));
-  const first = DATA[0];
-  const last = DATA[DATA.length - 1];
+  const DATA = useMemo(() => (series ? comparable.map((year) => {
+    const item = series.series.find((entry) => entry.key === year);
+    return { year, formal: item.formal, informal_only: item.informal_only, excluded: item.excluded };
+  }) : []), [series]);
+  const visible = useMemo(() => (dbProvinces || []).filter((item) => provinces.has(item.province)), [dbProvinces, provinces]);
+  const ready = DATA.length === comparable.length && dbProvinces;
+  const first = DATA[0] || { formal: "—", excluded: "—" };
+  const last = DATA[DATA.length - 1] || first;
   const label = MEASURES.find((item) => item.key === measure).label;
 
   return (
@@ -48,10 +53,14 @@ export default function FinanceSeriesCard({ rows }) {
       title="Financial Inclusion Since 2016"
       subtitle="How the share of adults without access has changed over three surveys."
       info="Each point is the share of Rwandan adults in that survey year. Formally served adults use a bank or another regulated provider such as mobile money or a SACCO. Informal only means savings groups or informal lenders without any formal product. Excluded means neither. 2016 and 2020 come from NISR's own strand in the survey data; 2024 is NISR's published figure. Banked is left out of the lines because NISR changed its definition in 2024."
-      aiInsight={`Formal use rose from ${first.formal}% in 2016 to ${last.formal}% in 2024, while the excluded share fell from ${first.excluded}% to ${last.excluded}%.`}
+      aiInsight={ready ? `Formal use rose from ${first.formal}% in 2016 to ${last.formal}% in 2024, while the excluded share fell from ${first.excluded}% to ${last.excluded}%.` : null}
       aiContext={`NISR FinScope Rwanda 2016 and 2020 (microdata, NISR's own Financial Access Strand) and 2024 (published). Rwanda, % of adults. ${DATA.map((item) => `${item.year}: formally served ${item.formal}, informal only ${item.informal_only}, excluded ${item.excluded}`).join("; ")}. Banked: 26% in 2016 and 36% in 2020 on the original definition, restated by NISR to 22% for both 2020 and 2024. Province change 2016 to 2020 for ${label}: ${visible.map((item) => `${item.province} ${item[measure].y2016}% to ${item[measure].y2020}% (${item[measure].change ? `${signed(item[measure].change.points)} points, ${item[measure].change.label}` : "n/a"})`).join("; ")}. 2016 has no district data. Separate surveys; no causes can be inferred. Source: ${DASHBOARD_SOURCES.financial}.`}
       inlineHelp
     >
+      {(evidence.isLoading || evidence.isError || !ready) && (
+        evidence.isLoading ? <EvidenceLoading label="trend figures" /> : evidence.isError ? <EvidenceError /> : <EvidenceMissing label="The approved trend dataset" />
+      )}
+      {ready && <>
       <Basis />
       <div className="mt-3"><Legend items={LINES} /></div>
       <div className="mt-2" role="img" aria-label={`Rwanda adults by survey year. ${DATA.map((item) => `${item.year}: formally served ${item.formal} percent, informal only ${item.informal_only}, excluded ${item.excluded}`).join(". ")}`}>
@@ -100,6 +109,7 @@ export default function FinanceSeriesCard({ rows }) {
       <p className="mt-3 border-t border-hairline pt-2 text-[10.5px] leading-relaxed text-[#8A94A6]">
         Sources: NISR FinScope 2016 and 2020 microdata (2016 checked against NISR's reported 26% banked, 42% other formal and 11% excluded) and <a href={DASHBOARD_SOURCES.financial} target="_blank" rel="noreferrer" className="underline underline-offset-2">Rwanda FinScope 2024</a>. 2016 intervals use weights only (no cluster field in the file) and are likely too narrow. FinScope 2012 is not included yet.
       </p>
+      </>}
     </Card>
   );
 }

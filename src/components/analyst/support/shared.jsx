@@ -11,16 +11,17 @@ const PILL = {
   muted: "bg-[#F1F4F9] text-sub",
   warn: "bg-[#FFFAEB] text-[#B54708]",
   ok: "bg-[#ECFDF3] text-[#067647]",
+  bad: "bg-[#FEF3F2] text-[#B42318]",
 };
 
 export function Pill({ tone = "neutral", children }) {
   return <span className={`inline-flex whitespace-nowrap rounded-full px-2 py-[3px] text-[10px] font-medium ${PILL[tone]}`}>{children}</span>;
 }
 
-// Investigation uses the existing route and query convention: ?district=<name>&autoStart=1.
-export const investigationLink = (name) => `/investigations?district=${encodeURIComponent(name)}&autoStart=1&from=poverty-support`;
+// AI Engine uses the district query convention: ?district=<name>&autoStart=1.
+export const investigationLink = (name) => `/ai-engine?district=${encodeURIComponent(name)}&autoStart=1&from=poverty-support`;
 
-export function InvestigateLink({ name, className = "", children = "Investigate District" }) {
+export function InvestigateLink({ name, className = "", children = "Analyze with AI Engine" }) {
   return (
     <Link to={investigationLink(name)} onClick={(event) => event.stopPropagation()}
       className={`inline-flex items-center gap-1.5 rounded-md bg-brand px-3 py-1.5 text-[11.5px] font-medium text-white hover:bg-[#524BE0] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand ${className}`}>

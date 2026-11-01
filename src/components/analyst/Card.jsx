@@ -35,7 +35,7 @@ export default function Card({ title, subtitle = null, info: infoProp = null, ai
           <h2 className="text-[13px] font-semibold tracking-tight text-ink">{title}</h2>
           {subtitle && <p className="mt-0.5 text-[11.5px] leading-snug text-sub">{subtitle}</p>}
         </div>
-        <div className="flex shrink-0 items-center gap-1">
+        <div className="flex max-w-full flex-wrap items-center justify-end gap-1">
           {action}
           {info && <InfoTip label={title} large tourName="chart-explanation">{info}</InfoTip>}
           {aiInsight && (

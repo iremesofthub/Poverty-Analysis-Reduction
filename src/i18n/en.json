@@ -22,8 +22,10 @@
   "nav": {
     "other-analysis": "Other Analysis",
     "poverty-analysis": "Poverty Analysis",
-    "investigations": "District Investigation",
+    "ai-engine": "AI Engine",
     "nst2": "National Goals",
+    "financial-inclusion": "Financial Inclusion",
+    "data-upload": "Data upload",
     "evidence": "Programme Results",
     "programmes": "Programme Management",
     "cooperatives": "Cooperatives",
@@ -33,8 +35,128 @@
     "beneficiary": "Program Member",
     "jobs": "Find a Job",
     "map": "District Map",
-    "datasets": "Data Sources",
-    "ussd-control": "USSD Control"
+    "datasets": "Data & Methodology",
+    "ussd-control": "USSD Control",
+    "account-requests": "Account requests"
+  },
+  "pageTitles": {
+    "districtMap": "District Map",
+    "programmeManagement": "Programme Management",
+    "cooperatives": "Cooperatives",
+    "cooperative": "Cooperative",
+    "government": "Government",
+    "agent": "Agent Dashboard",
+    "jobs": "Find a Job",
+    "datasets": "Data & Methodology"
+  },
+  "nst2": {
+    "title": "National Goals",
+    "intro": "Rwanda's National Goals",
+    "question": "Are we meeting the 2024–2029 targets?",
+    "latest": "Latest Numbers",
+    "latestHelp": "Key figures from the latest survey",
+    "targets": "Targets",
+    "targetsHelp": "Official goals for 2024–2029",
+    "pending": "target pending",
+    "social": "Social transformation",
+    "socialNote": "Poverty and social protection",
+    "economic": "Economic transformation",
+    "economicNote": "Financial inclusion",
+    "governance": "Transformational governance",
+    "governanceNote": "Evidence and delivery",
+    "poverty": "Poverty rate",
+    "extreme": "Extreme poverty",
+    "vupPoor": "VUP participation, poor households",
+    "vupAll": "Households reporting VUP participation",
+    "formal": "Formally included",
+    "excluded": "Financially excluded",
+    "banked": "Banked",
+    "informal": "Informal only",
+    "districts": "Districts with data",
+    "critical": "Districts with poverty 40%+ and VUP participation under 15% of poor",
+    "programmes": "Programmes tracked",
+    "traceability": "Payment traceability",
+    "perHousehold": "Per household",
+    "targetsText": "National targets, baselines and milestone years will load here once the NST2 indicator file is added. Current values already come from the NISR files."
+  },
+  "analyst": {
+    "dashboard": "Poverty Analysis Dashboard",
+    "dashboardHelp": "Dashboard shows which districts in Rwanda need support by comparing local poverty levels to the national average.",
+    "howToRead": "How to read this page",
+    "openAi": "Open AI Engine",
+    "trends": "Trends and Financial Inclusion",
+    "trendsHelp": "Poverty over time, who escaped poverty, and how financial access lines up with poverty by district."
+  },
+  "beneficiaryPage": {
+    "title": "My Benefits",
+    "helpTitle": "My Benefits",
+    "help": "This page shows your payments, enrolled programmes and support. Use it to check when your next payment is due and to send a complaint if something is wrong.",
+    "heading": "Your Benefits",
+    "subheading": "Check your payments and programmes",
+    "nextPayment": "Next payment",
+    "date": "Date",
+    "amount": "Amount",
+    "status": "Status",
+    "scheduled": "Scheduled",
+    "paymentHistory": "Payment history",
+    "paid": "Paid",
+    "programmes": "Your programmes",
+    "enrolled": "Enrolled",
+    "since": "Since {{date}} · next {{next}}",
+    "submitComplaint": "Submit a complaint",
+    "replyWithin": "We reply within 5 working days",
+    "received": "Your complaint was received. A field agent will contact you.",
+    "subject": "Subject",
+    "describe": "Describe the issue",
+    "send": "Send"
+  },
+  "cooperativesPage": {
+    "helpTitle": "Cooperatives",
+    "help": "Cooperatives are community groups that work together to earn an income. You can ask to join one in your own district. The cooperative decides whether to accept you. You will see the answer on this page.",
+    "adminNotice": "You are viewing every cooperative as {{name}}. Beneficiaries ask to join from this page; district and sector leaders can see them in the Government panel, and each cooperative manages itself.",
+    "all": "All cooperatives",
+    "inDistrict": "Cooperatives in {{district}}",
+    "yourSector": "Your sector",
+    "yourCooperative": "Your cooperative",
+    "ledBy": "led by {{name}}",
+    "yourRequest": "Your request to join {{name}} is waiting for the cooperative to decide. Asked {{when}}.",
+    "withdraw": "Withdraw",
+    "notYet": "You are not in a cooperative yet. Pick one below and ask to join.",
+    "requestSent": "Your request to join {{name}} was sent. The cooperative will decide.",
+    "noDistrict": "No cooperatives are registered in your district yet. Ask your sector leader.",
+    "members": "members",
+    "askJoin": "Ask to join",
+    "member": "You are a member",
+    "sent": "Request sent",
+    "full": "Full",
+    "notAccepting": "Not accepting members",
+    "inCooperative": "You are in a cooperative",
+    "pendingElsewhere": "Request pending elsewhere",
+    "accepting": "Accepting members",
+    "yourRequests": "Your requests",
+    "asked": "Asked {{when}}",
+    "withSector": "With sector leader",
+    "withCoop": "With the cooperative",
+    "requests": "Your requests",
+    "askedBy": "Asked {{when}}",
+    "decidedBy": "decided by {{name}}"
+  },
+  "coopHealth": {
+    "Going well": "Going well",
+    "Struggling": "Struggling",
+    "Inactive": "Inactive"
+  },
+  "programme": {
+    "tabs": {
+      "overview": "Overview",
+      "requests": "Analyst requests",
+      "cooperatives": "Cooperatives",
+      "agents": "Agents",
+      "beneficiaries": "Program Members",
+      "jobs": "Jobs & Recruitment",
+      "payments": "Payments",
+      "skills": "Skills & Training"
+    }
   },
   "tour": {
     "stepOf": "Step {{current}} of {{total}}",
@@ -47,8 +169,10 @@
     "intro": {
       "other-analysis": "This page keeps the earlier analysis: social support, programme delivery, district needs and priority districts. It uses older methods and data that are not the latest survey.",
       "poverty-analysis": "This page shows how many people are poor in each part of Rwanda. You can see where help is needed most.",
-      "investigations": "Pick a district and the computer will study it for you. It reads the data, checks the sources, and writes a report.",
+      "ai-engine": "Choose a district and let the AI Engine examine available data, check sources, and prepare findings for review.",
       "nst2": "This page shows Rwanda's goals for 2024 to 2029 and how close the country is to reaching them.",
+      "financial-inclusion": "This page separates the live BNR provider dashboard from NISR FinScope household-survey evidence, so their different measures stay clear.",
+      "data-upload": "Upload approved aggregate evidence as a draft. A platform administrator checks and publishes it before it can change public charts.",
       "evidence": "This page shows how the aid programmes are doing: money sent, families reached, and results.",
       "programmes": "This is the place to manage a programme: field agents, program members, jobs, and payments.",
       "cooperatives": "Find cooperatives near you. A cooperative is a group of people who work together. You can ask to join one.",
@@ -58,8 +182,9 @@
       "beneficiary": "This is your own panel. See your family, your cooperatives and your vote, your agent and visits, and your health insurance.",
       "jobs": "This page shows jobs you can apply for, and how your application is going.",
       "map": "This map shows Rwanda's 30 districts. Darker colours mean a higher number. Click a district to learn more.",
-      "datasets": "This page shows where every number comes from, and what each number means.",
-      "ussd-control": "See who uses the phone service, how it is going, and any problems. You can end a session or block a number. Every action is logged."
+      "datasets": "See where the figures come from, what each measure includes, and what the data cannot tell us.",
+      "ussd-control": "See who uses the phone service, how it is going, and any problems. You can end a session or block a number. Every action is logged.",
+      "account-requests": "Review new programme, cooperative, and member access requests. Match each request to the correct record before approving it."
     },
     "menu": {
       "title": "The menu",
@@ -71,6 +196,10 @@
       "text": "Press Take a tour any time. You will see the tour for the page you are on."
     },
     "steps": {
+      "account-request-list": {
+        "title": "Review requests",
+        "text": "Match the person to the correct official record, then approve or reject the request."
+      },
       "analysis-filter": {
         "title": "Choose a place",
         "text": "Choose All Rwanda or one province. The district charts and the Export file follow your choice. Numbers marked National always stay for the whole country."
@@ -82,6 +211,10 @@
       "analysis-poverty-chart": {
         "title": "Poverty by District",
         "text": "Each bar is one district. A longer bar means a higher share of people below the poverty line. The dashed line is the rate for all of Rwanda."
+      },
+      "analysis-certainty": {
+        "title": "How Certain Is This?",
+        "text": "Pick a district to see its 95% interval, sample size, reliability and whether it is really different from Rwanda. A wide interval means the survey is less sure about that district."
       },
       "analysis-chart-eye": {
         "title": "The eye icon",
@@ -98,6 +231,38 @@
       "analysis-finance": {
         "title": "Financial Inclusion",
         "text": "Imagine 100 adults in Rwanda. Each slice shows how many use banks or other money services. These numbers are for the whole country."
+      },
+      "financial-intro": {
+        "title": "Two official sources",
+        "text": "This page keeps BNR provider data and NISR FinScope household-survey evidence separate because they measure different things."
+      },
+      "financial-guide": {
+        "title": "Read the figures safely",
+        "text": "Use the source labels before comparing figures. The BNR dashboard is live provider information; FinScope is a survey of adults."
+      },
+      "financial-bnr": {
+        "title": "BNR live dashboard",
+        "text": "Use this embedded official dashboard for the current provider-reported view. If it cannot load here, open it in a new tab."
+      },
+      "financial-finscope": {
+        "title": "NISR FinScope evidence",
+        "text": "These charts show published FinScope survey estimates and trends. They are not a copy of the BNR dashboard."
+      },
+      "upload-intro": {
+        "title": "Safe uploads",
+        "text": "This page accepts published aggregate indicators only. Personal, household, and customer data do not belong here."
+      },
+      "upload-form": {
+        "title": "Submit a draft",
+        "text": "Add the official source details and use the CSV template. The file is checked before it is sent for review."
+      },
+      "upload-preview": {
+        "title": "Check the rows",
+        "text": "Review the first parsed rows before submitting. Fix any source, period, or value error in the file first."
+      },
+      "upload-review": {
+        "title": "Approval controls",
+        "text": "Drafts do not change public charts. A platform administrator can approve or reject them with a recorded note."
       },
       "analysis-data-note": {
         "title": "The amber warning icon",
@@ -132,16 +297,16 @@
         "text": "Click Export to save the district numbers as a file. Keep the year and the source with the numbers when you share them."
       },
       "inv-form": {
-        "title": "Choose a district",
-        "text": "Pick a district from the list, then press the purple button. The computer starts to study that district."
+        "title": "Open a governed run",
+        "text": "Your recent runs load automatically. Pick one, or start a new EICV7 analysis with a permission and indicator already on file."
       },
       "inv-tabs": {
-        "title": "Read the results",
-        "text": "When the study ends, use these tabs. They show the main findings, the causes that may matter, a comparison with other districts, and the data used."
+        "title": "Research workspace pages",
+        "text": "Use these pages to inspect lineage, record competing explanations, request bounded AI research, and review frozen reports."
       },
       "inv-history": {
-        "title": "Earlier studies",
-        "text": "Your earlier studies are saved. Open one to read it again."
+        "title": "Run record",
+        "text": "The status, scientific decision, and manifest come directly from the authorized governed API response."
       },
       "nst2-intro": {
         "title": "The big goals",
@@ -256,16 +421,16 @@
         "text": "This list shows districts to study first. Click a name to find it on the map."
       },
       "ds-intro": {
-        "title": "Data sources",
-        "text": "Every number in this app comes from one of these files."
+        "title": "Data & methodology",
+        "text": "Check each source's period, population, import status and limits before using its figures."
       },
       "ds-list": {
-        "title": "Dataset list",
-        "text": "Click a dataset to read about it: who made it and which year it is from."
+        "title": "Official source register",
+        "text": "Select a source to review its file details, import count, geography and known limits."
       },
       "ds-dictionary": {
-        "title": "Word list",
-        "text": "Not sure what a word or number means? Look it up here."
+        "title": "How to read the methods",
+        "text": "Compare the survey and provider methods, and keep poverty figures separate from financial access."
       },
       "programmes-subnav": {
         "title": "Tabs",
@@ -334,6 +499,126 @@
       "agent-open": {
         "title": "Open an agent",
         "text": "Click an agent's name to see when they joined and the history of their application."
+      },
+      "overview-review-requests": {
+        "title": "Review analyst requests",
+        "text": "When analysts send requests, a banner appears here. Open it to accept, assign or decline them."
+      },
+      "overview-kpis": {
+        "title": "Key figures",
+        "text": "See at a glance: agents, program members, monthly payments due, health insurance, open jobs and awards."
+      },
+      "overview-skills-chart": {
+        "title": "Skills trained",
+        "text": "Top skills your field agents are teaching, with the number of program members learning each one."
+      },
+      "overview-programmes": {
+        "title": "Programmes",
+        "text": "The programmes your account manages, with beneficiary counts, budgets and status."
+      },
+      "overview-cooperatives": {
+        "title": "Cooperatives",
+        "text": "Which cooperatives your program members belong to, what each one does and its health."
+      },
+      "overview-awards": {
+        "title": "Recent awards",
+        "text": "Skills achievements recognised for your program members, with the awarding agent and date."
+      },
+      "agents-search": {
+        "title": "Search agents",
+        "text": "Find an agent by name or ID."
+      },
+      "agents-district-filter": {
+        "title": "Filter by district",
+        "text": "Show agents from one district only."
+      },
+      "agents-add-agent": {
+        "title": "Add an agent",
+        "text": "Register a new field agent for your programme."
+      },
+      "agents-list": {
+        "title": "Agent cards",
+        "text": "Each card shows an agent's members served, visits, skills taught, phone and status."
+      },
+      "members-search": {
+        "title": "Search members",
+        "text": "Find a program member by name or ID."
+      },
+      "members-district-filter": {
+        "title": "Filter by district",
+        "text": "Show members from one district only."
+      },
+      "members-health-filter": {
+        "title": "Filter by health insurance",
+        "text": "Show members whose insurance is Paid, Expiring or Unpaid."
+      },
+      "members-table": {
+        "title": "Program member registry",
+        "text": "Your enrolled members with district, family size, health insurance, skills, tasks, cooperative and status."
+      },
+      "coops-kpis": {
+        "title": "Cooperative figures",
+        "text": "How many of your members are in cooperatives, how many cooperatives serve them, and which need attention."
+      },
+      "coops-filters": {
+        "title": "Filter cooperatives",
+        "text": "Show all, or only cooperatives doing well or needing attention."
+      },
+      "coops-list": {
+        "title": "Cooperative list",
+        "text": "Each cooperative your members belong to, with activity, location, leader and purpose."
+      },
+      "jobs-post-job": {
+        "title": "Post a job",
+        "text": "Create a vacancy, set the budget and schedule the exam and interview."
+      },
+      "jobs-list": {
+        "title": "Job postings",
+        "text": "Open positions with budget, applicants, deadline, required skills and interview details."
+      },
+      "payments-kpis": {
+        "title": "Payment figures",
+        "text": "Settled and reconciled amounts, failed payments and payments in progress."
+      },
+      "payments-record-obligation": {
+        "title": "Record an obligation",
+        "text": "Plan a payment (member support, agent salary or supplier). A draft instruction is created until provider-confirmed."
+      },
+      "payments-history": {
+        "title": "Payment history",
+        "text": "Demand instructions and sample payment records with amount, channel, date and status."
+      },
+      "skills-kpis": {
+        "title": "Skills figures",
+        "text": "Skills tracked, enrolments and certified members."
+      },
+      "skills-catalog": {
+        "title": "Skills catalog",
+        "text": "Each skill agents teach, its category, how many members are learning it, how many agents teach it and how many are certified."
+      },
+      "skills-awards": {
+        "title": "Awards",
+        "text": "Achievements recognised for program members, with skill, award type, agent and date."
+      },
+      "skills-award-button": {
+        "title": "Give an award",
+        "text": "Recognise a program member's achievement."
+      },
+      "requests-kpis": {
+        "title": "Request figures",
+        "text": "Waiting for your decision, in progress, completed and declined requests."
+      },
+      "requests-filters": {
+        "title": "Filter requests",
+        "text": "Show all requests, only those waiting for you, in progress, completed or closed."
+      },
+      "requests-search": {
+        "title": "Search requests",
+        "text": "Find a request by ID, district, programme or title."
+      },
+      "requests-list": {
+        "title": "Request list",
+        "text": "Each analyst request with ID, district, programme, title, status and priority."
       },
       "ussd-stats": {
         "title": "Usage at a glance",
@@ -524,6 +809,14 @@
     }
   },
   "gov": {
+    "tabs": {
+      "overview": "Overview",
+      "beneficiaries": "Program Members",
+      "problems": "Delivery problems",
+      "reports": "Field reports",
+      "requests": "Programme requests",
+      "cooperatives": "Cooperatives"
+    },
     "membersHelp": "People enrolled in programmes in {{area}}. You see no one outside your area.",
     "search": "Search by name",
     "noMembers": "No program members match.",
@@ -672,6 +965,257 @@
       "text": "No phone line needed. Dial {{code}} in the simulator with the demo number {{phone}}, then press the numbers to move around the menu.",
       "open": "Open the USSD simulator",
       "admin": "Administrators: sign in as the Platform Admin below, then open USSD Control in the menu to see sessions, errors and the admin log."
+    }
+  },
+  "discover": {
+    "heading": "Explore what Ireme Insight can do",
+    "subheading": "Understand the evidence, compare options, and follow action.",
+    "tourEntry": "See how it works",
+    "qualityLink": "How we check the numbers",
+    "verified": "How is this verified?",
+    "close": "Close",
+    "state": {
+      "calculated": "Calculated here · review pending",
+      "published": "Published official aggregate",
+      "partial": "Partly available",
+      "demo": "Demonstration records",
+      "unavailable": "Not available yet"
+    },
+    "apiState": {
+      "present": "This build points at a governed research API address. That says the address is set, nothing more: a run, review or export result appears only when the service answers.",
+      "missing": "This deployment has no governed research API address, so no run, review or export result can be shown here."
+    },
+    "field": {
+      "purpose": "What this is for",
+      "source": "Where it comes from",
+      "period": "Data period",
+      "population": "Who it describes",
+      "geography": "Geography",
+      "denominator": "Denominator",
+      "method": "Method",
+      "resultKind": "What kind of result",
+      "systemState": "How the application behaves today",
+      "limitation": "What it cannot tell you",
+      "proof": "Proof inside the application"
+    },
+    "kind": {
+      "surveyEstimate": "Survey estimate with uncertainty, not a certified figure",
+      "publishedEstimate": "Published estimate from another official source",
+      "scenarioNotProduced": "Hypothetical scenario · not produced in this build",
+      "demoRecord": "Demonstration record · not an observed outcome",
+      "noneProduced": "No result produced"
+    },
+    "blocked": {
+      "roleNotPermitted": "Your role cannot open this screen.",
+      "noProgrammeAccess": "Programme teams act on requests. Your role sees their status on the analyst pages, not the working queue.",
+      "noRulesLoaded": "Approved VUP screening rules are not loaded, so no eligibility decision can be shown.",
+      "noReferralView": "This role has no referral view. Opportunity records are handled by programme teams and agents.",
+      "noValidatedModel": "No validated model is available, so no performance figure is shown to any role.",
+      "unknownFeature": "This feature is not in the registry.",
+      "supportCompareNotBuilt": "No comparison figures exist in this build for any role: the analyst screen states what one would need."
+    },
+    "financialNote": "This page holds financial access measures only. Resilience indicators - money set aside, insurance against a shock, or whether a household can cover an unexpected expense - are not in the loaded dataset, so no resilience figure is shown.",
+    "mini": {
+      "evidenceQuality": "Evidence quality",
+      "whatCanWeDo": "What can we do?",
+      "fromAnalysisToAction": "From analysis to action",
+      "compareOptions": "Compare options",
+      "exploreResilience": "Explore resilience",
+      "understandModel": "Understand the model",
+      "notOnThisPage": "Nothing is decided here"
+    },
+    "tour": {
+      "title": "A short walkthrough",
+      "stepOf": "Step {{current}} of {{total}}",
+      "notFound": "That part is not on your screen at the moment. Use Next to continue.",
+      "unavailable": {
+        "title": "Not available for this account",
+        "text": "Your role cannot open this screen, so the walkthrough stops here instead of pretending to complete it. {{reason}} What the screen does: {{summary}}"
+      },
+      "problem": {
+        "title": "The problem, and where the data comes from",
+        "text": "Ireme Insight answers one question for NISR: which districts have the highest poverty, and what happens next. The headline figures are official NISR releases - the EICV7 2023/24 household survey for poverty, and published FinScope and provider aggregates for finance. Nothing on this page is estimated by a model."
+      },
+      "evidence": {
+        "title": "How sure the evidence is",
+        "text": "Each district figure carries a design-based 95% interval, the number of households behind it and a reliability grade. Where a district falls inside the national interval the page says it is not clearly different from Rwanda, rather than ranking it. Sources, periods, populations and methods are listed on Data & Methodology, and differences from published figures stay visible as data notes."
+      },
+      "compare": {
+        "title": "Comparing options, honestly",
+        "text": "A same-budget comparison of support approaches is not validated yet, so this screen sets out what such a comparison needs and shows no invented numbers. When scenarios exist they will be labelled as scenarios, never as outcomes."
+      },
+      "action": {
+        "title": "From evidence to action",
+        "text": "This is the request queue: an analyst asks for a check, a programme account accepts or declines with a reason, an agent reports from the field, and the answer returns. Every record here is a demonstration record, so its counts are never programme performance figures."
+      },
+      "actionAnalyst": {
+        "text": "Programme teams work the queue in their own panel, which your role does not open. Here you see each request's status next to the poverty figure that prompted it, which is the honest view for a national analyst."
+      },
+      "report": {
+        "title": "What a report can prove",
+        "text": "Reports, review and export run through the governed research API. If it is not connected, this workspace says so plainly rather than showing a result or a green label. Published reports keep their impact limits next to the export control."
+      },
+      "finish": "Finish"
+    },
+    "feature": {
+      "evidence-check": {
+        "title": "Check the evidence",
+        "subtitle": "See where a number comes from, how reliable it is, and what still needs review.",
+        "cta": "Explore evidence",
+        "purpose": "Follow any headline figure back to its official source and see how much sampling uncertainty it carries.",
+        "source": "NISR EICV7 2023/24 published aggregates, loaded into this repository from the official register on the Data & Methodology page.",
+        "period": "2023/24 survey year. The earlier rates are NISR's modelled 2016/17 estimates.",
+        "population": "Poverty measures describe people. VUP participation describes surveyed poor households. The two are never subtracted from each other.",
+        "geography": "Rwanda as a whole and each district.",
+        "denominator": "Weighted population for poverty shares; weighted surveyed poor households for reported VUP participation.",
+        "method": "Design-based estimation under the stratified multi-stage cluster design, with Taylor-series linearisation for variance and 95% intervals on design degrees of freedom.",
+        "resultKind": "surveyEstimate",
+        "systemState": "Intervals are calculated in this repository and shown wherever a district figure appears. Independent scientific review is still outstanding, so results stay labelled as pending review rather than certified.",
+        "limitation": "Districts with few surveyed households give wide intervals, and a difference inside the interval is not evidence of a real difference. Licensed microdata is never sent to the browser.",
+        "proof": [
+          {
+            "label": "Survey evidence for one district",
+            "href": "/ai-engine?district=Gisagara"
+          },
+          {
+            "label": "Data & Methodology register",
+            "href": "/datasets"
+          }
+        ]
+      },
+      "support-compare": {
+        "title": "Compare support options",
+        "subtitle": "Explore which approach might reach more households at the same assumed budget.",
+        "cta": "Compare options",
+        "purpose": "Compare two support approaches under one assumed budget before anyone commits resources to either.",
+        "source": "Not available. No approved budget, unit cost or versioned targeting rule is loaded in this build.",
+        "method": "A comparison would need a coverage baseline, an agreed budget line and a reviewed rule set, then a stated simulation model with its assumptions beside every result.",
+        "resultKind": "scenarioNotProduced",
+        "systemState": "Not implemented. The application shows no comparison figures, so nothing here can be read as a simulated outcome.",
+        "limitation": "Until the inputs above are approved and reviewed, any number produced would be a guess. This screen states the requirement instead.",
+        "proof": [
+          {
+            "label": "What a same-budget comparison needs",
+            "href": "/other-analysis#support-compare"
+          }
+        ]
+      },
+      "resilience": {
+        "title": "Understand financial resilience",
+        "subtitle": "Read what people report using, keep the two financial sources apart, and see what is still missing.",
+        "cta": "Explore resilience",
+        "purpose": "Show financial access from two different official sources and keep their measures separate instead of blending them into one rate.",
+        "source": "NISR FinScope 2024 household survey, and the BNR/NBR provider dashboard snapshot. Both are published aggregates.",
+        "period": "FinScope 2024. The provider snapshot carries its own retrieval date on the page.",
+        "population": "Adults in Rwanda: those interviewed in the survey, and those appearing in regulated provider records. The groups overlap but are not the same.",
+        "geography": "National, with district comparisons from the survey side.",
+        "denominator": "Surveyed adults for FinScope shares; provider customer records for BNR counts.",
+        "method": "Published aggregates are shown as released. This application does not re-derive them or combine them with survey poverty.",
+        "resultKind": "publishedEstimate",
+        "systemState": "Access measures are available. Resilience measures - savings, insurance against a shock, whether a household can cover an unexpected expense - are not in the loaded dataset, so the application does not report them.",
+        "limitation": "Having an account does not show financial resilience. Access and provider counts cannot be added, compared as one figure, or read as a poverty result.",
+        "proof": [
+          {
+            "label": "FinScope survey evidence",
+            "href": "/financial-inclusion"
+          },
+          {
+            "label": "How the two financial measures differ",
+            "href": "/datasets"
+          }
+        ]
+      },
+      "action-tracking": {
+        "title": "Follow action and results",
+        "subtitle": "See how an evidence-based request moves to programme follow-up.",
+        "cta": "Follow an action",
+        "purpose": "Trace one request from a survey finding, through a programme decision and field work, to the answer that comes back to the analyst.",
+        "source": "Workflow records created in this demonstration build. The survey evidence that prompts a request comes from NISR EICV7.",
+        "population": "Programme requests, their assignees and recorded outcomes.",
+        "method": "Each request keeps a status history with the actor and note at every step, and a completed request returns an outcome to the analyst.",
+        "resultKind": "demoRecord",
+        "systemState": "The queue runs in the browser and is stored on this device. It is not connected to a government system, so waiting, in-progress and completed counts are demonstration figures, never programme performance.",
+        "limitation": "Requests, agents and outcomes shown here are sample records unless a server-backed workflow with row-level security is authorised and connected. Draft and demonstration records are not counted as verified results.",
+        "proof": [
+          {
+            "label": "Programme delivery beside poverty",
+            "href": "/other-analysis#programme-delivery"
+          },
+          {
+            "label": "Programme request queue",
+            "href": "/programmes?tab=requests"
+          }
+        ]
+      },
+      "vup-rules": {
+        "title": "Understand VUP screening",
+        "subtitle": "Check an application against reviewed rules, with a person making the decision.",
+        "cta": "Review screening",
+        "purpose": "Show how a VUP application would be screened against published rules, leaving the decision with a named officer.",
+        "source": "Not available. The approved rule text, its legal source and its version are not loaded in this build.",
+        "resultKind": "noneProduced",
+        "systemState": "The roster shows members on record. It applies no screening rule and issues no eligibility verdict, because nothing here has been verified against an approved source.",
+        "limitation": "Rules must be transcribed from an approved instrument, versioned and reviewed by the programme before any pre-screening is shown. A member list is a register, not a decision.",
+        "proof": [
+          {
+            "label": "Program members on record",
+            "href": "/programmes?tab=beneficiaries"
+          }
+        ]
+      },
+      "referral-followup": {
+        "title": "Connect people with opportunities",
+        "subtitle": "Match skills and support needs to suitable services, then track the follow-up.",
+        "cta": "Explore referrals",
+        "purpose": "Track an opportunity from a matching step to an application, an interview and an outcome that a person confirms.",
+        "source": "Opportunity and application records created in this demonstration build.",
+        "resultKind": "demoRecord",
+        "systemState": "Applications move through staged states with a note at each step. No vacancy is live and no placement is confirmed by an outside employer.",
+        "limitation": "Catalogued opportunities are demonstration entries, not vacancies, and a tracked outcome here is not evidence that a person's income changed.",
+        "proof": [
+          {
+            "label": "Jobs and recruitment records",
+            "href": "/programmes?tab=jobs"
+          }
+        ]
+      },
+      "quality-checks": {
+        "title": "How we check the numbers",
+        "subtitle": "Read statistical checks, source comparison and unresolved differences.",
+        "cta": "See quality checks",
+        "purpose": "Show which checks run automatically, what they catch, and what still needs a human reviewer.",
+        "source": "The official source register on this page records each file's publisher, period, geography, licence and load status. Report wording is checked against the figures it describes.",
+        "method": "Estimates are computed from published aggregates with the survey design respected. Wording checks flag a sentence that contradicts its own figure, and the check is recorded rather than hidden.",
+        "resultKind": "surveyEstimate",
+        "systemState": "Machine checks run in this repository and their results are readable. A release stays blocked until the governed API and a named reviewer approve it, and that review is not complete.",
+        "limitation": "Automated checks find wording that contradicts the data. They are not an independent scientific certification, and where our figure differs from a published one the page shows a data note instead of replacing either number.",
+        "proof": [
+          {
+            "label": "Official source register",
+            "href": "/datasets"
+          },
+          {
+            "label": "Survey evidence with uncertainty",
+            "href": "/ai-engine?district=Gisagara"
+          }
+        ]
+      },
+      "model-evaluation": {
+        "title": "Understand the model",
+        "subtitle": "See out-of-sample results, calibration, fairness and limitations.",
+        "cta": "View model evaluation",
+        "purpose": "Show how a targeting model performed on data it never saw, and where it fails.",
+        "source": "Not available. No trained model, holdout set or evaluation report is shipped in this build.",
+        "resultKind": "noneProduced",
+        "systemState": "No accuracy, calibration or fairness figure appears anywhere in the application, and no household is classified by a model.",
+        "limitation": "A model card needs a holdout grouped by survey cluster, leakage tests, calibration and a fairness review before any performance number can be published.",
+        "proof": [
+          {
+            "label": "AI research workspace",
+            "href": "/ai-engine?section=agents"
+          }
+        ]
+      }
     }
   }
 }

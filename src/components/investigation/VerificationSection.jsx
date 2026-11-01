@@ -1,5 +1,6 @@
 import React from "react";
 import { AlertTriangle, CheckCircle2, ShieldCheck } from "lucide-react";
+import { STATUS_LABEL } from "@/lib/reportVerification";
 
 const TONE = {
   verified_match: "bg-emerald-50 text-emerald-800 border-emerald-200",
@@ -36,11 +37,54 @@ export function VerificationSummary({ section }) {
   </div>;
 }
 
+function Fact({ label, children, tone = "text-ink" }) {
+  return <p className="mt-1 text-[11.5px] leading-relaxed"><strong className="text-ink">{label}: </strong><span className={tone}>{children}</span></p>;
+}
+
+// Everything in this block is recounted from the verification registry the table below prints - see
+// evidenceQualitySummary() in src/lib/reportVerification.js. It exists because "the numbers matched" is not the
+// same fact as "the published document could be read, the definitions line up, and the method review passed",
+// and a reader has to be able to tell those apart. Absent checks are reported as absent, never as zero problems.
+export function EvidenceQuality({ quality }) {
+  if (!quality?.available) return null;
+  const { counts, sources, comparability, estimates, checks } = quality;
+  return <div data-pdf-unit data-testid="evidence-quality" className="rounded-lg border border-hairline bg-canvas/60 p-3">
+    <h4 className="text-[11px] font-semibold uppercase tracking-[0.06em] text-sub">Evidence quality</h4>
+    <p className="mt-1 text-[11px] leading-relaxed text-sub">Recounted from the {quality.totals.registry} checks recorded by the engine{quality.generatedAt ? `, run on ${String(quality.generatedAt).slice(0, 10)}` : ""}. Nothing here is typed in.</p>
+
+    <ul className="mt-2 flex flex-wrap gap-1.5" data-testid="evidence-counts">
+      {quality.statuses.map(({ status, label, count }) => <li key={status}><StatusChip status={status}>{label}: {count}</StatusChip></li>)}
+    </ul>
+
+    {quality.countsMatchSummary === false && <p data-testid="quality-disagreement" className="mt-2 rounded-md border border-red-200 bg-red-50 p-2 text-[11px] leading-relaxed text-red-900">
+      The figures recorded for this run and the summary attached to them do not agree. The counts above are the recount of the {quality.totals.registry} recorded checks; the summary claims {Object.entries(quality.declaredCounts || {}).filter(([, value]) => Number.isFinite(value)).map(([key, value]) => `${value} ${STATUS_LABEL[key] || key}`).join(", ") || "different totals"}. Read the table, not the summary.
+    </p>}
+    {quality.unexpectedStatuses.length > 0 && <p className="mt-2 text-[11px] leading-relaxed text-red-900">
+      <strong>{quality.unexpectedStatuses.length} check{quality.unexpectedStatuses.length === 1 ? " carries" : "s carry"} a status this view has no label for</strong> ({quality.unexpectedStatuses.join(", ")}). They are counted in the total and listed in the table, but not shown as one of the five kinds above.
+    </p>}
+
+    <Fact label="Official documents read">{sources.retrieved} of {sources.total} available{quality.periods.length ? `; survey period${quality.periods.length === 1 ? "" : "s"} covered: ${quality.periods.join(", ")}` : ""}</Fact>
+    {sources.failedToRetrieve.length > 0 && <Fact label="Could not be read" tone="font-medium text-red-800">{sources.failedToRetrieve.map((item) => `${item.title} (${item.error || "no reason recorded"})`).join("; ")}</Fact>}
+    {sources.unavailableWithoutReason > 0 && <Fact label="Unavailable, reason not recorded" tone="text-red-800">{sources.unavailableWithoutReason} document{sources.unavailableWithoutReason === 1 ? "" : "s"}</Fact>}
+    {sources.claimsWithoutSource.length > 0 && <Fact label="Figures with no published document behind them">{sources.claimsWithoutSource.join("; ")}</Fact>}
+
+    <Fact label="Definitions line up enough to compare">{comparability.comparable} comparable, {comparability.notComparable} not comparable{comparability.unknown ? `, ${comparability.unknown} not stated` : ""}</Fact>
+    <Fact label="Where the numbers come from">{estimates.observed} calculated by the engine from the microdata, {estimates.modelled} copied from a published modelled estimate and not recomputed here</Fact>
+
+    <Fact label="Method review">{checks.status === "not_run" ? "not attempted for this run" : `${checks.status} — ${checks.passed} of ${checks.total} check${checks.total === 1 ? "" : "s"} passed${checks.needsReview ? `, ${checks.needsReview} needs review` : ""}`}</Fact>
+    <Fact label="Human scientific review" tone="text-amber-900">{quality.approvals.note}</Fact>
+    {quality.unresolved > 0 && <Fact label="Unresolved" tone="font-medium text-red-800">{quality.unresolved} — {quality.unresolvedItems.join(", ") || "the recorded checks name no item"}</Fact>}
+
+    <p className="mt-2 text-[11px] leading-relaxed text-sub">{quality.limitations} stated limitation{quality.limitations === 1 ? "" : "s"} and {quality.auditSteps} audit entr{quality.auditSteps === 1 ? "y" : "ies"} travel with this report. A passing count is not a release decision: only the governed API can mark a report published.</p>
+  </div>;
+}
+
 export default function VerificationSection({ section }) {
   if (!section) return null;
   if (!section.available) return <VerificationSummary section={section} />;
   return <div className="space-y-3">
     <p className="text-[12.5px] leading-relaxed text-ink">{section.headline}</p>
+    <EvidenceQuality quality={section.quality} />
 
     <table className="hidden w-full border-collapse text-left text-[11.5px] sm:table">
       <thead><tr className="border-b border-hairline text-[10px] uppercase tracking-[0.06em] text-sub">{["Indicator", "Internal result", "Official published result", "Source", "Verification"].map((name) => <th key={name} className="py-1.5 pr-2 font-semibold">{name}</th>)}</tr></thead>

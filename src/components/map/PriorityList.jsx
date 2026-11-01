@@ -16,7 +16,7 @@ export default function PriorityList({ rows, national, layer, selected, onSelect
   }, [data, mode, layer]);
 
   return (
-    <Card title="Districts" subtitle={mode === "review" ? "Poverty above and VUP below the national rate" : `All districts, highest ${layer === "vup" ? "VUP participation" : config.label.toLowerCase()} first`} bodyClassName="px-0 pb-0">
+    <Card title="Districts" subtitle={mode === "review" ? "Poverty above and VUP below the national rate, with a poverty difference from Rwanda larger than sampling uncertainty" : `All districts, highest ${layer === "vup" ? "VUP participation" : config.label.toLowerCase()} first`} bodyClassName="px-0 pb-0">
       <div className="px-5 pb-2" role="group" aria-label="List filter">
         <div className="inline-flex rounded-md bg-[#F1F4F9] p-0.5">
           {[["review", "Review first"], ["all", "All districts"]].map(([key, label]) => (

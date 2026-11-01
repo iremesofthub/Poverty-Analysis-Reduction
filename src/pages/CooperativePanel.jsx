@@ -7,6 +7,7 @@ import { ago } from "@/components/requests/bits";
 import { BENEFICIARIES } from "@/data/programme";
 import { useDemoAuth, useRole } from "@/lib/DemoAuthContext";
 import { HEALTH, JOIN_STATUS, cooperativeIdOf, decideJoin, removeMember, updateCoop, useCooperatives } from "@/lib/cooperatives";
+import { useTranslation } from "react-i18next";
 
 const input = "mt-1 w-full rounded-md border border-hairline bg-white px-3 py-2 text-[12.5px] text-ink outline-none focus:border-brand";
 const short = (name) => ({ "VUP Direct Support": "VUP", "Girinka Munyarwanda": "Girinka", "Expanded Public Works": "Public Works", "Nsymibondo y'Icyaro": "Nsymibondo" }[name] || name);
@@ -17,6 +18,7 @@ function Kpi({ icon: Icon, label, value, foot, warn }) {
 
 // A cooperative's own panel. Only the cooperative (and the platform admin) accepts or declines members.
 export default function CooperativePanel() {
+  const { t } = useTranslation();
   const role = useRole();
   const { demoUser } = useDemoAuth();
   const store = useCooperatives();
@@ -44,7 +46,7 @@ export default function CooperativePanel() {
 
   return (
     <div className="pb-14">
-      <PageHeader title="Cooperative" badge={<span className="hidden items-center gap-1.5 rounded-full border border-hairline px-2 py-[3px] text-[11px] text-sub sm:inline-flex">{coop.name} · {coop.sector}, {coop.district}</span>}
+      <PageHeader title={t("pageTitles.cooperative")} badge={<span className="hidden items-center gap-1.5 rounded-full border border-hairline px-2 py-[3px] text-[11px] text-sub sm:inline-flex">{coop.name} · {coop.sector}, {coop.district}</span>}
         actions={isAdmin ? <label className="flex items-center gap-2 text-[11.5px] text-sub">Viewing<select value={coop.id} onChange={(event) => { setAdminChoice(event.target.value); setNote(null); }} className="rounded-md border border-hairline bg-white px-2 py-1.5 text-[12px] font-medium text-ink outline-none focus:border-brand">{store.coops.map((item) => <option key={item.id} value={item.id}>{item.name} ({item.district})</option>)}</select></label> : null} />
 
       <PanelGuide id="cooperative-panel" title="Cooperative">

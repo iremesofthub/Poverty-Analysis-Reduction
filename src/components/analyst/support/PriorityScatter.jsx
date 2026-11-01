@@ -1,10 +1,17 @@
 import React, { useRef, useState } from "react";
 import { useSize } from "@/hooks/use-size";
-import { QUADRANTS } from "@/lib/povertySupport";
+import { QUADRANTS, hasInterval, isDistinguishableFromNational } from "@/lib/povertySupport";
+import { contrastVerdict } from "@/lib/districtUncertainty";
 import { COLORS, DistrictFacts, Legend, Swatch } from "./shared";
 
 const SOURCE = "NISR EICV7, 2023/24";
 const niceCeil = (value, step) => Math.ceil(value / step) * step;
+
+// Screen-reader phrase for the design-based interval, or an explicit statement
+// that none exists. Never a blank, which a listener could misread as "no spread".
+const intervalPhrase = (row) => (hasInterval(row.povertyInterval)
+  ? ` (95 percent interval ${row.povertyInterval.low.toFixed(1)} to ${row.povertyInterval.high.toFixed(1)})`
+  : ", interval not available");
 
 export default function PriorityScatter({ rows, national, selectedName, onSelect }) {
   const box = useRef(null);
@@ -27,6 +34,7 @@ export default function PriorityScatter({ rows, national, selectedName, onSelect
 
   const ordered = [...rows].sort((a, b) => b.poverty - a.poverty || a.name.localeCompare(b.name));
   const reviewFirst = ordered.filter((row) => row.quadrant.key === "reviewFirst");
+  const clearlyAbove = reviewFirst.filter((row) => isDistinguishableFromNational(row)).length;
   const labelled = new Set([...(reviewFirst.length <= 8 ? reviewFirst.map((row) => row.name) : []), selectedName, hoverName].filter(Boolean));
   const shown = rows.find((row) => row.name === hoverName);
 
@@ -80,7 +88,7 @@ export default function PriorityScatter({ rows, national, selectedName, onSelect
             const selected = selectedName === row.name;
             return (
               <g key={row.name} ref={(node) => { refs.current[row.name] = node; }} tabIndex={index === tabStop ? 0 : -1} role="button" aria-pressed={selected}
-                aria-label={`${row.name}: poverty ${row.poverty.toFixed(1)} percent, VUP participation ${row.vupAmongPoor.toFixed(1)} percent. ${row.quadrant.detail}.${small ? " Small sample." : ""} Press Enter to select.`}
+                aria-label={`${row.name}: poverty ${row.poverty.toFixed(1)} percent${intervalPhrase(row)}, VUP participation ${row.vupAmongPoor.toFixed(1)} percent. ${row.quadrant.detail}.${small ? " Small sample." : ""} ${contrastVerdict(row.povertyContrast).label}. Press Enter to select.`}
                 className="cursor-pointer outline-none [&:focus-visible>circle.ring]:stroke-[#0A2540]"
                 onPointerEnter={(event) => { if (event.pointerType === "mouse") setHoverName(row.name); }}
                 onPointerLeave={(event) => { if (event.pointerType === "mouse") setHoverName(null); }}
@@ -95,17 +103,27 @@ export default function PriorityScatter({ rows, national, selectedName, onSelect
               </g>
             );
           })}
+          {shown && hasInterval(shown.povertyInterval) && (
+            // The hovered district's design-based 95% interval, drawn on the poverty
+            // axis only. It is not a joint confidence region for the two measures.
+            <g pointerEvents="none" aria-hidden="true">
+              <line x1={sx(shown.vupAmongPoor)} x2={sx(shown.vupAmongPoor)} y1={sy(shown.povertyInterval.low)} y2={sy(shown.povertyInterval.high)} stroke={COLORS.national} strokeWidth="1.4" opacity="0.55" />
+              <line x1={sx(shown.vupAmongPoor) - 5} x2={sx(shown.vupAmongPoor) + 5} y1={sy(shown.povertyInterval.low)} y2={sy(shown.povertyInterval.low)} stroke={COLORS.national} strokeWidth="1.4" opacity="0.55" />
+              <line x1={sx(shown.vupAmongPoor) - 5} x2={sx(shown.vupAmongPoor) + 5} y1={sy(shown.povertyInterval.high)} y2={sy(shown.povertyInterval.high)} stroke={COLORS.national} strokeWidth="1.4" opacity="0.55" />
+            </g>
+          )}
         </svg>
         {shown && (
           <div role="tooltip" className="pointer-events-none absolute z-20 w-60 rounded-lg border border-hairline bg-white p-2.5 shadow-[0_8px_24px_rgba(10,37,64,0.14)]"
             style={{ left: tipLeft, top: tipBelow ? sy(shown.poverty) + 14 : undefined, bottom: tipBelow ? undefined : H - sy(shown.poverty) + 14 }}>
             <DistrictFacts row={shown} national={national} source={SOURCE} />
             <p className="mt-1 text-[10.5px] font-medium text-brand">{shown.quadrant.detail}</p>
+            <p className="mt-1 text-[10.5px] leading-snug text-sub">{contrastVerdict(shown.povertyContrast).label}: {contrastVerdict(shown.povertyContrast).detail}</p>
           </div>
         )}
       </div>
       <p className="mt-1 text-[10.5px] leading-relaxed text-[#8A94A6]">
-        The lines show Rwanda-wide values. Districts close to a line may not truly differ from Rwanda because confidence intervals have not been calculated. {reviewFirst.length} of {rows.length} districts are in the shaded “review first” area.
+        The lines show Rwanda-wide values. Hovering a district draws its design-based 95% interval for poverty; a district whose joint contrast against Rwanda includes zero may not truly differ from the national rate. {reviewFirst.length} of {rows.length} districts are in the shaded “review first” area, of which {clearlyAbove} have a poverty difference from Rwanda larger than sampling uncertainty.
       </p>
     </div>
   );

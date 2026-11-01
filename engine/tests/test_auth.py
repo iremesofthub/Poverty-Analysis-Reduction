@@ -12,6 +12,7 @@ from cryptography.hazmat.primitives.asymmetric import rsa
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from ireme import auth
+from ireme.profiles import GOVERNED_PRODUCTION_CONFIG
 from acceptance import acceptance
 
 
@@ -89,17 +90,20 @@ class JwtAuthorization(unittest.TestCase):
 
     @acceptance('PRIV-13')
     def test_elevated_review_requires_mfa_and_independent_subject(self):
+        # This asserts the production governance contract, so it pins that profile even
+        # when the ambient IREME_PROFILE is HACKATHON_DEMO.
+        profile = GOVERNED_PRODUCTION_CONFIG
         payload = copy.deepcopy(self.payload)
         payload['app_metadata']['roles'] = ['statistical_reviewer']
         principal = self.verifier.verify(self.token(payload))
         with self.assertRaises(auth.AuthorizationError):
-            auth.authorize(principal, 'report:review', 'tenant-a', 'Kamonyi', author='other')
+            auth.authorize(principal, 'report:review', 'tenant-a', 'Kamonyi', author='other', profile=profile)
         principal = replace(principal, assurance='aal2')
         with self.assertRaises(auth.AuthorizationError):
-            auth.authorize(principal, 'report:review', 'tenant-a', 'Kamonyi', author='analyst')
-        auth.authorize(principal, 'report:review', 'tenant-a', 'Kamonyi', author='other')
+            auth.authorize(principal, 'report:review', 'tenant-a', 'Kamonyi', author='analyst', profile=profile)
+        auth.authorize(principal, 'report:review', 'tenant-a', 'Kamonyi', author='other', profile=profile)
         with self.assertRaises(auth.AuthorizationError):
-            auth.authorize(replace(principal, expires_at=0), 'report:review', 'tenant-a', author='other')
+            auth.authorize(replace(principal, expires_at=0), 'report:review', 'tenant-a', author='other', profile=profile)
 
     def test_expired_key_cache_never_uses_stale_keys_during_outage(self):
         clock = [0.0]

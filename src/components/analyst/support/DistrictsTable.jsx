@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { ArrowDown, ArrowUp, Search } from "lucide-react";
 import { filterRows, formatInterval, sortRows } from "@/lib/povertySupport";
+import { contrastVerdict } from "@/lib/districtUncertainty";
 import { anyInterval, COLORS, InvestigateLink, Pill } from "./shared";
 import InfoTip, { HELP } from "./InfoTip";
 
@@ -49,7 +50,7 @@ export default function DistrictsTable({ rows, selectedName, onSelect }) {
           <input type="search" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search district" aria-label="Search districts"
             className="h-8 w-44 rounded-md border border-hairline bg-white pl-7 pr-2 text-[12px] text-ink placeholder:text-[#8A94A6] focus-visible:outline-2 focus-visible:outline-brand" />
         </div>
-        <p className="text-[10.5px] text-[#8A94A6]">Ordered by estimate. Without confidence intervals, nearby ranks are not statistically different.</p>
+        <p className="text-[10.5px] text-[#8A94A6]">{intervals ? "Ordered by point estimate. Where intervals overlap, nearby ranks are not statistically separated." : "Ordered by estimate. Without confidence intervals, nearby ranks are not statistically different."}</p>
       </div>
 
       {matches.length === 0 ? (
@@ -104,9 +105,10 @@ export default function DistrictsTable({ rows, selectedName, onSelect }) {
                     <strong className="text-[12px] text-ink">{row.name}</strong><Pill tone={row.marker.tone}>{row.marker.label}</Pill>
                   </button>
                   <div className="mt-2 grid grid-cols-2 gap-3 text-[10.5px] text-sub">
-                    <div>Poverty · people<p className="mt-0.5 text-[12px] font-medium tabular-nums text-ink">{row.poverty.toFixed(1)}%</p></div>
-                    <div>VUP · poor households<p className="mt-0.5 text-[12px] font-medium tabular-nums text-ink">{row.vupAmongPoor.toFixed(1)}% <span className="font-normal text-sub">(n={row.samplePoorHouseholds})</span></p></div>
+                    <div>Poverty · people<p className="mt-0.5 text-[12px] font-medium tabular-nums text-ink">{row.poverty.toFixed(1)}%</p><p className="text-[10px] tabular-nums text-[#8A94A6]">{formatInterval(row.povertyInterval)}</p></div>
+                    <div>VUP · poor households<p className="mt-0.5 text-[12px] font-medium tabular-nums text-ink">{row.vupAmongPoor.toFixed(1)}% <span className="font-normal text-sub">(n={row.samplePoorHouseholds})</span></p><p className="text-[10px] tabular-nums text-[#8A94A6]">{formatInterval(row.vupInterval)}</p></div>
                   </div>
+                  <p className="mt-1.5 text-[10px] leading-snug text-sub">{contrastVerdict(row.povertyContrast).label}</p>
                   <div className="mt-2 flex items-center justify-between gap-2"><Pill tone={row.quality.tone}>{row.quality.label}</Pill><InvestigateLink name={row.name} className="!px-2 !py-1 !text-[10.5px]">Investigate</InvestigateLink></div>
                 </li>
               );
@@ -116,7 +118,7 @@ export default function DistrictsTable({ rows, selectedName, onSelect }) {
       )}
 
       <div className="mt-2 flex flex-wrap items-center justify-between gap-2 text-[10.5px] text-[#8A94A6]">
-        <span>{intervals ? "Confidence intervals as supplied in the data." : "Confidence intervals: not calculated in the source data."}</span>
+        <span>{intervals ? "95% intervals are design-based (strata and PSUs from the EICV7 sample) and pending independent scientific review." : "Confidence intervals: not calculated in the source data."}</span>
         {!query && matches.length > 10 && <button type="button" onClick={() => setShowAll((value) => !value)} className="font-medium text-brand hover:underline">{showAll ? "Show top 10" : `Show all ${matches.length}`}</button>}
       </div>
     </div>

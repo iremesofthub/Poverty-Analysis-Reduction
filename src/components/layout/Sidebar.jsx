@@ -1,16 +1,20 @@
 import React, { useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { Link, NavLink, useLocation, useSearchParams } from "react-router-dom";
-import { LogOut, Settings, CircleHelp } from "lucide-react";
+import { LogOut, Settings, CircleHelp, Compass } from "lucide-react";
 import Brand from "@/components/layout/Brand";
 import { useAuth } from "@/lib/AuthContext";
 import { useDemoAuth, useRole } from "@/lib/DemoAuthContext";
+import { supabaseConfigured } from "@/lib/supabaseClient";
+import { DEMO_PANEL_ROUTES, hackathonDemoEnabled, isHostedDemoSession } from "@/lib/hackathonDemo.js";
 import { navForRole, navSlug, ROLES } from "@/lib/roles";
+import { judgeTour } from "@/lib/judgeFeatureRegistry";
 import { PM_TABS } from "@/data/programme";
 import { GOV_TABS } from "@/lib/govArea";
 import { MEMBER_TABS } from "@/lib/memberTabs";
 import { requestStats, useActionRequests } from "@/lib/actionRequests";
 import { useProgrammeScope } from "@/lib/programmeScope";
+import LanguageSwitcher from "@/components/layout/LanguageSwitcher";
 
 const SUB_TABS = { "/programmes": PM_TABS, "/government": GOV_TABS, "/beneficiary": MEMBER_TABS };
 
@@ -29,15 +33,23 @@ function SubNav({ to }) {
   const tabs = SUB_TABS[to];
   if (!tabs || pathname !== to) return null;
   const current = tabs.some((item) => item.id === params.get("tab")) ? params.get("tab") : "overview";
-  return <ul data-tour="sidebar-subnav" className="ml-[19px] mt-0.5 space-y-0.5 border-l border-hairline pl-2">{tabs.map((item) => <li key={item.id}><Link to={item.id === "overview" ? to : `${to}?tab=${item.id}`} className={`flex items-center rounded-md px-2.5 py-1.5 text-[12px] transition-colors ${current === item.id ? "bg-brand-soft font-medium text-brand" : "text-[#425466] hover:bg-canvas hover:text-ink"}`} aria-current={current === item.id ? "page" : undefined}>{t(`member.tabs.${item.id}`, { defaultValue: item.label })}{item.id === "requests" && to === "/programmes" && <RequestBadge />}</Link></li>)}</ul>;
+  const namespace = to === "/programmes" ? "programme.tabs" : to === "/government" ? "gov.tabs" : "member.tabs";
+  return <ul data-tour="sidebar-subnav" className="ml-[19px] mt-0.5 space-y-0.5 border-l border-hairline pl-2">{tabs.map((item) => <li key={item.id}><Link to={item.id === "overview" ? to : `${to}?tab=${item.id}`} className={`flex items-center rounded-md px-2.5 py-1.5 text-[12px] transition-colors ${current === item.id ? "bg-brand-soft font-medium text-brand" : "text-[#425466] hover:bg-canvas hover:text-ink"}`} aria-current={current === item.id ? "page" : undefined}>{t(`${namespace}.${item.id}`, { defaultValue: item.label })}{item.id === "requests" && to === "/programmes" && <RequestBadge />}</Link></li>)}</ul>;
 }
 
-export default function Sidebar({ onStartTour }) {
+export default function Sidebar({ onStartTour, onStartJudgeTour }) {
   const { t } = useTranslation();
   const role = useRole();
   const { demoUser, logout: demoLogout } = useDemoAuth();
-  const { user, logout: realLogout } = useAuth();
-  const groups = navForRole(role);
+  const { user, isAuthenticated, logout: realLogout } = useAuth();
+  // In a hosted demo session the menu lists only the panels the visitor can actually open, so a judge
+  // never clicks through to a sign-in wall. Writes, approvals and household panels stay login-only.
+  const hostedDemo = isHostedDemoSession({ flagEnabled: hackathonDemoEnabled, supabaseConfigured, demoUser, isAuthenticated });
+  const groups = navForRole(role)
+    .map((group) => (hostedDemo ? { ...group, items: group.items.filter((item) => DEMO_PANEL_ROUTES.includes(String(item.to).split("?")[0])) } : group))
+    .filter((group) => group.items.length > 0);
+  // Only offer the walkthrough when this account can actually follow more than one step of it.
+  const judgeSteps = judgeTour(role).filter((item) => item.available).length;
   const navRef = useRef(null);
   const { pathname, search } = useLocation();
   // On short screens the menu scrolls inside the sidebar; keep the open page's item in view.
@@ -86,10 +98,17 @@ export default function Sidebar({ onStartTour }) {
         ))}
       </nav>
       <div className="border-t border-hairline px-3 py-3">
+        <div className="mb-1"><LanguageSwitcher /></div>
         <button type="button" data-tour="take-tour" onClick={onStartTour} className="flex w-full items-center gap-2 rounded-md px-2 py-2 text-[12.5px] text-sub hover:bg-canvas hover:text-ink">
           <CircleHelp className="h-4 w-4" strokeWidth={1.75} />
           <span>{t("common.takeTour")}</span>
         </button>
+        {judgeSteps > 1 && onStartJudgeTour && (
+          <button type="button" data-judge="sidebar-entry" onClick={onStartJudgeTour} className="flex w-full items-center gap-2 rounded-md px-2 py-2 text-[12.5px] text-sub hover:bg-canvas hover:text-ink">
+            <Compass className="h-4 w-4" strokeWidth={1.75} />
+            <span>{t("discover.tourEntry")}</span>
+          </button>
+        )}
         <NavLink to="/settings" data-tour="nav-settings" className={({ isActive }) => `flex items-center gap-2 rounded-md px-2 py-1.5 text-[12.5px] hover:bg-canvas hover:text-ink ${isActive ? "font-medium text-brand" : "text-sub"}`}>
           <Settings className="h-4 w-4" strokeWidth={1.75} />
           <span>{t("common.settings")}</span>

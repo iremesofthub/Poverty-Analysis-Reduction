@@ -3,10 +3,12 @@ import {
   Briefcase,
   Building2,
   ClipboardCheck,
-  Search,
   FileText,
+  Landmark,
   Layers,
+  Upload,
   Map as MapIcon,
+  BrainCircuit,
   ShieldCheck,
   Target,
   Users,
@@ -57,8 +59,9 @@ export const NAV_GROUPS = [
     items: [
       { label: "Poverty Analysis", to: "/", icon: BarChart3, roles: ["platform_admin", "nisr_analyst"] },
       { label: "Other Analysis", to: "/other-analysis", icon: BarChart3, sub: true, roles: ["platform_admin", "nisr_analyst"] },
-      { label: "District Investigation", to: "/investigations", icon: Search, roles: ["platform_admin", "nisr_analyst"] },
+      { label: "AI Engine", to: "/ai-engine", icon: BrainCircuit, roles: Object.keys(ROLES) },
       { label: "National Goals", to: "/nst2", icon: Target, roles: ["platform_admin", "nisr_analyst"] },
+      { label: "Financial Inclusion", to: "/financial-inclusion", icon: Landmark, roles: ["platform_admin", "nisr_analyst"] },
       { label: "Programme Results", to: "/evidence", icon: ClipboardCheck, roles: ["platform_admin"] },
     ],
   },
@@ -78,6 +81,8 @@ export const NAV_GROUPS = [
       { label: "Program Member", to: "/beneficiary", icon: UserRound, roles: ["platform_admin", "beneficiary"] },
       { label: "Find a Job", to: "/jobs", icon: Briefcase, roles: ["platform_admin", "job_applicant"] },
       { label: "USSD Control", to: "/ussd-control", icon: Smartphone, roles: ["platform_admin"] },
+      { label: "Account requests", to: "/account-requests", icon: Users, roles: ["platform_admin"] },
+      { label: "Data upload", to: "/data-upload", icon: Upload, roles: ["platform_admin", "nisr_analyst"] },
     ],
   },
   {
@@ -89,7 +94,7 @@ export const NAV_GROUPS = [
   {
     label: "Data",
     items: [
-      { label: "Data Sources", to: "/datasets", icon: FileText, roles: ["platform_admin", "nisr_analyst"] },
+      { label: "Data & Methodology", to: "/datasets", icon: FileText, roles: ["platform_admin", "nisr_analyst"] },
     ],
   },
 ];

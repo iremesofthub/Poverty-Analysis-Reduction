@@ -16,10 +16,10 @@ export const CARD_HELP = {
   "Targets": "These are the official goals for 2024 to 2029. Compare them with the latest numbers to see how far we have to go.",
 
   // Programme Results
-  "Payments Delivered": "This chart shows how much money was sent to families each month. A line that goes up means more money was sent.",
-  "Payment Journey": "This shows the steps a family takes, from joining to getting money. A big drop between two steps means many families are getting stuck there.",
-  "Programme Mix": "This shows how families are shared between the four programmes. A longer bar means that programme reaches more families.",
-  "Programme Performance": "This table shows each programme's money, the families it reaches, and its status. Watch means the programme needs a closer look.",
+  "Payments Delivered": "This chart shows money sent out each month in the demo data. It is sample data, not real payments. A line that goes up means more money was sent in the demo.",
+  "Payment Journey": "This shows the steps in the demo data, from joining to getting money. Each step counts demo records, not real families. A big drop is a place to look at the workflow again.",
+  "Programme Mix": "This shows the share for each programme in the demo data. One household can be in more than one programme, so these shares do not add up to a number of families.",
+  "Programme Performance": "This table shows the demo data for each programme: money, member records, and status. These are not official programme totals. Watch means the record needs a closer look.",
 
   // Data Sources
   "Datasets": "These are the data files the app uses. Click one to see who made it and which year it is from.",

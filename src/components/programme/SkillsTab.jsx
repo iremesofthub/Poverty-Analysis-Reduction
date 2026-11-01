@@ -12,7 +12,7 @@ export default function SkillsTab() {
 
   return (
     <div className="space-y-4">
-      <div className="grid grid-cols-3 gap-3">
+      <div className="grid grid-cols-3 gap-3" data-tour="skills-kpis">
         <div className="rounded-xl border border-hairline bg-white px-4 py-3.5">
           <p className="flex items-center gap-1.5 text-[11px] text-[#8A94A6]"><GraduationCap className="h-3.5 w-3.5" /> Skills tracked</p>
           <p className="mt-1 text-[20px] font-semibold text-ink tabular-nums">{SKILLS_CATALOG.length}</p>
@@ -28,7 +28,7 @@ export default function SkillsTab() {
       </div>
 
       <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
-        <Card title="Skills catalog" subtitle="Trained by field agents">
+        <Card title="Skills catalog" subtitle="Trained by field agents" data-tour="skills-catalog">
           <div className="overflow-x-auto">
             <table className="w-full min-w-[420px] border-collapse text-[12px]">
               <thead>
@@ -58,8 +58,9 @@ export default function SkillsTab() {
         <Card
           title="Awards & achievements"
           subtitle="Recognising progress to motivate others"
+          data-tour="skills-awards"
           action={
-            <button onClick={() => setAwarding(true)} className="inline-flex items-center gap-1.5 rounded-md bg-brand px-2.5 py-1.5 text-[11px] font-medium text-white hover:bg-brand/90">
+            <button onClick={() => setAwarding(true)} data-tour="skills-award-button" className="inline-flex items-center gap-1.5 rounded-md bg-brand px-2.5 py-1.5 text-[11px] font-medium text-white hover:bg-brand/90">
               <Plus className="h-3.5 w-3.5" /> Award
             </button>
           }

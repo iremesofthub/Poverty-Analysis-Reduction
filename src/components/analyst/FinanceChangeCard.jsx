@@ -3,14 +3,12 @@ import { Bar, BarChart, CartesianGrid, LabelList, ResponsiveContainer, Tooltip, 
 import Card from "@/components/analyst/Card";
 import { Basis, Legend, Segmented, ViewTable } from "@/components/analyst/TrendBits";
 import { DASHBOARD_SOURCES, FINANCIAL_ACCESS_NATIONAL } from "@/data/dashboardEvidence";
-import { FINANCE_CHANGE_DISTRICTS, FINANCE_MEASURES, FINSCOPE_TREND } from "@/data/dashboardTrends";
+import { FINANCE_MEASURES } from "@/data/dashboardTrends";
+import { selectTrendComparison } from "@/data/financialInclusion";
+import { EvidenceError, EvidenceLoading, EvidenceMissing, useActiveEvidence } from "@/lib/useFinancialInclusionData";
 
 const SEGMENTS = FINANCIAL_ACCESS_NATIONAL.map((part) => ({ key: part.key, label: part.label, color: part.color }));
 const KEYS = { banked: "banked", otherFormal: "other_formal", informalOnly: "informal_only", excluded: "excluded" };
-const NATIONAL = [
-  { name: "2020 (restated by NISR)", ...Object.fromEntries(Object.entries(KEYS).map(([key, source]) => [key, FINSCOPE_TREND.national.y2020Restated[source]])) },
-  { name: "2024", ...Object.fromEntries(Object.entries(KEYS).map(([key, source]) => [key, FINSCOPE_TREND.national.y2024[source]])) },
-];
 const TOWARD = "#635BFF";
 const AWAY = "#F5A623";
 const NEUTRAL = "#A3ADBD";
@@ -36,25 +34,40 @@ function Tip({ active = false, payload = [] }) {
 export default function FinanceChangeCard({ rows }) {
   const [measure, setMeasure] = useState("excluded");
   const [showAll, setShowAll] = useState(false);
+  const evidence = useActiveEvidence();
+  const comparison = useMemo(() => selectTrendComparison(evidence.observations), [evidence.observations]);
+  const ready = Boolean(comparison && comparison.districts.length >= 30);
   const names = useMemo(() => new Set(rows.map((row) => row.name)), [rows]);
   const info = FINANCE_MEASURES[measure];
-  const sorted = useMemo(() => FINANCE_CHANGE_DISTRICTS.filter((row) => names.has(row.name) && row[measure].change).sort((a, b) => a[measure].change.points - b[measure].change.points), [names, measure]);
+  const changeDistricts = useMemo(() => (comparison?.districts || []).filter((row) => names.has(row.name) && row[measure]), [comparison, names, measure]);
+  const NATIONAL = useMemo(() => (comparison && ready ? [
+    { name: "2020 (restated by NISR)", ...Object.fromEntries(Object.entries(KEYS).map(([key, source]) => [key, comparison.national.y2020Restated[source]])) },
+    { name: "2024", ...Object.fromEntries(Object.entries(KEYS).map(([key, source]) => [key, comparison.national.y2024[source]])) },
+  ] : []), [comparison, ready]);
+  const sorted = useMemo(() => changeDistricts.filter((row) => row[measure].change).sort((a, b) => a[measure].change.points - b[measure].change.points), [changeDistricts, measure]);
   const visible = showAll ? sorted : sorted.slice(0, 8);
-  const limit = Math.max(5, Math.ceil(Math.max(...FINANCE_CHANGE_DISTRICTS.flatMap((row) => (row[measure].change ? [Math.abs(row[measure].change.ci_lower), Math.abs(row[measure].change.ci_upper)] : []))) / 10) * 10);
+  const limit = Math.max(5, Math.ceil(Math.max(0, ...changeDistricts.flatMap((row) => (row[measure]?.change ? [Math.abs(row[measure].change.ci_lower), Math.abs(row[measure].change.ci_upper)] : []))) / 10) * 10);
   const place = (value) => `${50 + (Math.max(-limit, Math.min(limit, value)) / limit) * 50}%`;
-  const counts = FINSCOPE_TREND.counts;
-  const here = counts[measure];
-  const mobile = FINSCOPE_TREND.national.mobileMoney;
+  const counts = comparison?.counts || {};
+  const here = counts[measure] || { "Clear rise": 0, "Clear fall": 0, Possible: 0, "No clear change": 0 };
+  const mobile = comparison?.national?.mobileMoney || { 2020: "—", 2024: "—", published: {} };
+  const nationalLine = comparison ? `2020 restated by NISR banked ${comparison.national.y2020Restated.banked}, other formal ${comparison.national.y2020Restated.other_formal}, informal only ${comparison.national.y2020Restated.informal_only}, excluded ${comparison.national.y2020Restated.excluded}; 2024 banked ${comparison.national.y2024.banked}, other formal ${comparison.national.y2024.other_formal}, informal only ${comparison.national.y2024.informal_only}, excluded ${comparison.national.y2024.excluded}` : "national trend rows unavailable";
+  const samples = ready ? comparison.districts.map((row) => row.sampleAdults2020).filter((n) => Number.isFinite(n)) : [];
+  const sampleText = samples.length ? `District samples are about ${Math.min(...samples)} to ${Math.max(...samples)} adults in 2020.` : "";
 
   return (
     <Card
       title="Financial Inclusion 2020 to 2024"
       subtitle="See which districts moved, and how sure the surveys are."
       info="Each dot is the change in a district between FinScope 2020 and FinScope 2024, in percentage points. The thin line is the 95% interval; if it crosses zero the surveys cannot tell a real change from chance. A change is called clear only after allowing for comparing 30 districts at once. 2020 comes from NISR's own strand in the microdata; 2024 uses NISR's published district figures, so the 2024 side is a rounded whole number with an approximate margin."
-      aiInsight={`Across 30 districts, the share of adults using no financial service clearly fell in ${counts.excluded["Clear fall"]} between 2020 and 2024; nationally NISR reports 7% excluded in 2020 and 4% in 2024.`}
-      aiContext={`NISR FinScope 2020 (microdata, NISR's own Financial Access Strand) and FinScope 2024 (published district figures, Figure 13). Rwanda, % of adults: 2020 restated by NISR banked 22, other formal 55, informal only 16, excluded 7; 2024 banked 22, other formal 70, informal only 4, excluded 4. Registered mobile money users: about ${mobile["2020"]}% in 2020 and ${mobile["2024"]}% in 2024 (NISR published 60% and 77%). Measure shown: ${info.label}. ${sorted.map((row) => `${row.name}: ${row[measure].y2020.pct}% to ${row[measure].y2024}% (${signed(row[measure].change.points)} points, ${row[measure].change.ci_lower.toFixed(1)} to ${row[measure].change.ci_upper.toFixed(1)}), ${row[measure].change.label}`).join("; ")}. Banked is not compared because NISR changed its definition (36% originally in 2020, restated to 22%). District samples are 416 adults in 2020. Not linked to the poverty survey; changes are described, not explained. Source: ${DASHBOARD_SOURCES.financial}.`}
+      aiInsight={ready ? `Across ${comparison.districts.length} districts, the share of adults using no financial service clearly fell in ${counts.excluded?.["Clear fall"] ?? 0} between 2020 and 2024; nationally NISR reports ${comparison.national.y2020Restated.excluded}% excluded in 2020 and ${comparison.national.y2024.excluded}% in 2024.` : null}
+      aiContext={ready ? `NISR FinScope 2020 (microdata, NISR's own Financial Access Strand) and FinScope 2024 (published district figures, Figure 13). Rwanda, % of adults: ${nationalLine}. Registered mobile money users: about ${mobile["2020"]}% in 2020 and ${mobile["2024"]}% in 2024 (NISR published ${mobile.published?.["2020"] ?? "—"}% and ${mobile.published?.["2024"] ?? "—"}%). Measure shown: ${info.label}. ${sorted.map((row) => `${row.name}: ${row[measure].y2020.pct}% to ${row[measure].y2024}% (${signed(row[measure].change.points)} points, ${row[measure].change.ci_lower.toFixed(1)} to ${row[measure].change.ci_upper.toFixed(1)}), ${row[measure].change.label}`).join("; ")}. Banked is not compared because NISR changed its definition (${comparison.national.y2020Microdata?.banked ?? 36}% originally in 2020, restated to ${comparison.national.y2020Restated.banked}%). ${sampleText} Not linked to the poverty survey; changes are described, not explained. Source: ${DASHBOARD_SOURCES.financial}.` : null}
       inlineHelp
     >
+      {(evidence.isLoading || evidence.isError || !ready) && (
+        evidence.isLoading ? <EvidenceLoading label="district trend figures" /> : evidence.isError ? <EvidenceError /> : <EvidenceMissing label="The approved district trend dataset" />
+      )}
+      {ready && <>
       <Basis />
       <div className="mt-3"><Legend items={SEGMENTS} /></div>
       <div className="mt-2" role="img" aria-label={`Rwanda financial access strands. ${NATIONAL.map((row) => `${row.name}: ${SEGMENTS.map((segment) => `${segment.label} ${row[segment.key]} percent`).join(", ")}`).join(". ")}`}>
@@ -110,8 +123,9 @@ export default function FinanceChangeCard({ rows }) {
       <ViewTable head={["District", "2020 %", "2024 %", "Change (points)", "95% interval", "Result"]}
         rows={sorted.map((row) => [row.name, row[measure].y2020.pct.toFixed(1), row[measure].y2024.toFixed(1), signed(row[measure].change.points), `${row[measure].change.ci_lower.toFixed(1)} to ${row[measure].change.ci_upper.toFixed(1)}`, row[measure].change.label])} />
       <p className="mt-3 border-t border-hairline pt-2 text-[10.5px] leading-relaxed text-[#8A94A6]">
-        Sources: NISR FinScope 2020 microdata (NISR's own access strand; {FINSCOPE_TREND.national.y2020Microdata.formal}% formally served nationally, as published) and <a href={DASHBOARD_SOURCES.financial} target="_blank" rel="noreferrer" className="underline underline-offset-2">Rwanda FinScope 2024</a> district figures (whole numbers; their margin is approximated, so intervals are likely too narrow). Mobile money is estimated from the questionnaire in both years: {mobile["2020"]}% and {mobile["2024"]}% against NISR's published {mobile.published["2020"]}% and {mobile.published["2024"]}%.
+        Sources: NISR FinScope 2020 microdata (NISR's own access strand; {comparison.national.y2020Microdata.formal}% formally served nationally, as published) and <a href={DASHBOARD_SOURCES.financial} target="_blank" rel="noreferrer" className="underline underline-offset-2">Rwanda FinScope 2024</a> district figures (whole numbers; their margin is approximated, so intervals are likely too narrow). Mobile money is estimated from the questionnaire in both years: {mobile[2020]}% and {mobile[2024]}% against NISR's published {mobile.published?.[2020]}% and {mobile.published?.[2024]}%.
       </p>
+      </>}
     </Card>
   );
 }

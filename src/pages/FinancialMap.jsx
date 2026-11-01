@@ -14,7 +14,9 @@ import PanelGuide from "@/components/analyst/PanelGuide";
 import { DASHBOARD_DISTRICTS, DASHBOARD_SOURCES, NATIONAL_EICV7 } from "@/data/dashboardEvidence";
 import { LAYER_KEYS, MAP_LAYERS } from "@/lib/mapLayers";
 import { useDemoAuth, useRole } from "@/lib/DemoAuthContext";
+import { useAuth } from "@/lib/AuthContext";
 import { districtAllowed, mapScope, scopeDistrictGeo, scopeDistrictRows, scopeSectorFeatures } from "@/lib/geoScope";
+import { useTranslation } from "react-i18next";
 
 const CAN_INVESTIGATE = ["platform_admin", "nisr_analyst"];
 const SELECTED_KEY = "district-map-selected";
@@ -24,8 +26,10 @@ const readSaved = (key, fallback) => {
 };
 
 export default function FinancialMap() {
+  const { t } = useTranslation();
   const role = useRole();
   const { demoUser } = useDemoAuth();
+  const { profile } = useAuth();
   const [geo, setGeo] = useState(null);
   const [geoError, setGeoError] = useState(false);
   const [layer, setLayer] = useState("poverty");
@@ -36,10 +40,10 @@ export default function FinancialMap() {
   const programmeScope = useProgrammeScope();
   const rowsByName = useMemo(() => Object.fromEntries(DASHBOARD_DISTRICTS.map((row) => [row.name, row])), []);
   // A district, sector or cell leader starts on their own district. Everyone else keeps their last choice.
-  const area = leaderScope(demoUser);
+  const area = leaderScope(demoUser, profile);
   const isLeader = ["gov_district", "gov_sector", "gov_cell"].includes(role);
   const scope = useMemo(() => mapScope(role, area), [role, area.district, area.sector]); // eslint-disable-line react-hooks/exhaustive-deps
-  const home = isLeader ? (DASHBOARD_DISTRICTS.find((row) => row.name === area.district)?.name || DASHBOARD_DISTRICTS.find((row) => demoUser?.scope?.includes(row.name))?.name || null) : null;
+  const home = isLeader ? (DASHBOARD_DISTRICTS.find((row) => row.name === area.district)?.name || DASHBOARD_DISTRICTS.find((row) => (demoUser?.scope ?? profile?.scope)?.includes(row.name))?.name || null) : null;
   const [selected, setSelectedState] = useState(() => {
     const saved = readSaved(SELECTED_KEY, null);
     if (!scope.all) return scope.district;
@@ -105,7 +109,7 @@ export default function FinancialMap() {
   return (
     <div className="pb-14">
       <PageHeader
-        title="District Map"
+        title={t("pageTitles.districtMap")}
         badge={
           <span className="hidden items-center gap-1.5 rounded-full border border-hairline px-2 py-[3px] text-[11px] text-sub sm:inline-flex">
             <span className="h-1.5 w-1.5 rounded-full bg-pos" />
@@ -160,7 +164,7 @@ export default function FinancialMap() {
         </div>
 
         <p className="mt-5 text-[10.5px] leading-relaxed text-[#8A94A6]">
-          Boundaries: geoBoundaries ADM2 (30 districts) and ADM3 (416 sectors, CC BY 4.0). Data: <a href={DASHBOARD_SOURCES.poverty} target="_blank" rel="noreferrer" className="underline underline-offset-2">NISR EICV7</a>, 2023/24. Poverty counts people; VUP participation counts surveyed poor households, so the two cannot be subtracted. District samples are small and confidence intervals were not calculated.
+          Boundaries: geoBoundaries ADM2 (30 districts) and ADM3 (416 sectors, CC BY 4.0). Data: <a href={DASHBOARD_SOURCES.poverty} target="_blank" rel="noreferrer" className="underline underline-offset-2">NISR EICV7</a>, 2023/24. Poverty counts people; VUP participation counts surveyed poor households, so the two cannot be subtracted. District rates carry design-based 95% intervals calculated by this repository's survey engine and pending independent scientific review; shading alone follows the point estimate, so similar shades can still cover genuinely different districts.
         </p>
       </div>
     </div>

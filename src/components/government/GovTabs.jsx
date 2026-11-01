@@ -22,6 +22,8 @@ export function GovOverview({ area, scope, problems, issues, requests }) {
   const row = surveyRow(area.district);
   const by = scope.sector ? "cell" : "sector";
   const groups = useMemo(() => groupRecords(area.records, by), [area.records, by]);
+  // The bars plot the first fourteen groups; the textual alternative describes those same rows, no more.
+  const plotted = groups.slice(0, 14);
   const total = area.records.length;
   const count = (status) => area.records.filter((item) => item.status === status).length;
   const attention = groups.filter((item) => item.attention > 0).sort((a, b) => b.attention - a.attention).slice(0, 5);
@@ -47,8 +49,9 @@ export function GovOverview({ area, scope, problems, issues, requests }) {
 
     <div className="grid grid-cols-1 gap-4 xl:grid-cols-3">
       <Card title={`Program Members by ${by}`} subtitle="Records on this platform" className="xl:col-span-2">
-        {groups.length === 0 ? <Empty>No program member records in your area.</Empty> : <ResponsiveContainer width="100%" height={Math.max(226, Math.min(groups.length, 14) * 26)}>
-          <BarChart data={groups.slice(0, 14)} layout="vertical" margin={{ top: 4, right: 12, bottom: 0, left: 8 }} barCategoryGap="22%">
+        {groups.length === 0 ? <Empty>No program member records in your area.</Empty> : <div role="img" aria-label={`Program members by ${by}, stacked by status. ${plotted.map((item) => `${item.name}: ${item.active} active, ${item.pending} pending, ${item.suspended} suspended`).join(". ")}.`}>
+        <ResponsiveContainer width="100%" height={Math.max(226, Math.min(groups.length, 14) * 26)}>
+          <BarChart data={plotted} layout="vertical" margin={{ top: 4, right: 12, bottom: 0, left: 8 }} barCategoryGap="22%">
             <CartesianGrid horizontal={false} stroke="#EDF1F7" />
             <XAxis type="number" allowDecimals={false} tick={{ fontSize: 10.5, fill: "#8A94A6" }} axisLine={false} tickLine={false} />
             <YAxis type="category" dataKey="name" width={86} tick={{ fontSize: 10.5, fill: "#5B6B80" }} axisLine={false} tickLine={false} />
@@ -57,7 +60,7 @@ export function GovOverview({ area, scope, problems, issues, requests }) {
             <Bar dataKey="pending" name="Pending" stackId="a" fill="#F5B544" />
             <Bar dataKey="suspended" name="Suspended" stackId="a" fill="#E5604F" radius={[0, 3, 3, 0]} />
           </BarChart>
-        </ResponsiveContainer>}
+        </ResponsiveContainer></div>}
       </Card>
 
       <Card title={`Where to look first`} subtitle={`${by === "cell" ? "Cells" : "Sectors"} with the most pending, suspended or unpaid cases`} bodyClassName="px-0 pb-0">
@@ -192,7 +195,7 @@ export function GovIssues({ area, scope, store, by }) {
 // ---------------------------------------------------------------- Programme requests
 export function GovRequests({ area, requests }) {
   const mine = requests.filter((item) => item.district === area.district).sort((a, b) => Date.parse(b.createdAt) - Date.parse(a.createdAt));
-  return <div className="space-y-3">
+  return <div className="space-y-3" data-judge="gov-requests">
     <div><h2 className="text-[20px] font-semibold tracking-tight text-ink">Programme requests in {area.district}</h2><p className="mt-0.5 text-[12px] text-sub">Requests sent to programme teams about this district, by analysts and by leaders, and what the teams answered.</p></div>
     {mine.length === 0 ? <Empty>No requests have been sent about {area.district}.</Empty> : <ul className="space-y-2.5">{mine.map((item) => <li key={item.id} className="rounded-xl border border-hairline bg-white p-3.5">
       <div className="flex flex-wrap items-start justify-between gap-2"><div className="min-w-0"><p className="text-[13px] font-semibold text-ink">{item.title}</p><p className="mt-0.5 text-[11px] text-sub">{item.id} · {typeLabel(item.type)} · {short(item.programme)} · {item.priority} priority · asked by {item.createdBy.name} {ago(item.createdAt)}</p></div><span className={`rounded-full px-2 py-0.5 text-[11px] font-medium ${item.status === "Completed" ? "bg-[#ECFDF3] text-[#067647]" : item.status === "Declined" ? "bg-[#FEF3F2] text-[#B42318]" : "bg-[#EFEDFF] text-[#4B3FCC]"}`}>{item.status}</span></div>

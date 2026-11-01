@@ -5,6 +5,7 @@ import { requestStats, useActionRequests } from "@/lib/actionRequests";
 import Card from "@/components/analyst/Card";
 import { useProgrammeScope } from "@/lib/programmeScope";
 import { programmeCoops, useCooperatives } from "@/lib/cooperatives";
+import FeatureMiniEntry from "@/components/discovery/FeatureMiniEntry";
 
 
 function Kpi({ icon: Icon, label, value, foot, tone = "brand" }) {
@@ -38,8 +39,8 @@ export default function OverviewTab({ onOpenTab }) {
 
   return (
     <div className="space-y-4">
-      {onOpenTab && asks.waiting > 0 && <button type="button" onClick={() => onOpenTab("requests")} className="flex w-full items-center gap-3 rounded-xl border border-[#FEDF89] bg-[#FFFAEB] px-4 py-3 text-left hover:bg-[#FFF6DB]"><span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-white text-[#B54708]"><Inbox className="h-4 w-4" /></span><span className="min-w-0 flex-1"><span className="block text-[13px] font-semibold text-ink">{asks.waiting} {asks.waiting === 1 ? "request" : "requests"} from analysts waiting for your decision</span><span className="block text-[11.5px] text-sub">Accept, assign or decline them. The analyst sees your answer.</span></span><span className="text-[12px] font-medium text-brand">Review</span></button>}
-      <div className="grid grid-cols-2 gap-3 xl:grid-cols-3">
+      {onOpenTab && asks.waiting > 0 && <button type="button" onClick={() => onOpenTab("requests")} data-tour="overview-review-requests" className="flex w-full items-center gap-3 rounded-xl border border-[#FEDF89] bg-[#FFFAEB] px-4 py-3 text-left hover:bg-[#FFF6DB]"><span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-white text-[#B54708]"><Inbox className="h-4 w-4" /></span><span className="min-w-0 flex-1"><span className="block text-[13px] font-semibold text-ink">{asks.waiting} {asks.waiting === 1 ? "request" : "requests"} from analysts waiting for your decision</span><span className="block text-[11.5px] text-sub">Accept, assign or decline them. The analyst sees your answer.</span></span><span className="text-[12px] font-medium text-brand">Review</span></button>}
+      <div className="grid grid-cols-2 gap-3 xl:grid-cols-3" data-tour="overview-kpis">
         <Kpi icon={Users} label="Agents" value={AGENTS.length} foot={`${activeAgents} active across ${districtCount} districts`} />
         <Kpi icon={Users} label="Program Members" value={BENEFICIARIES.length} foot={`${BENEFICIARIES.filter((b) => b.status === "Active").length} active`} />
         <Kpi icon={Wallet} label="Monthly payments due" value={`RWF ${(monthly / 1e6).toFixed(2)}M`} foot={`to ${BENEFICIARIES.filter((b) => b.status === "Active").length} active members`} tone="pos" />
@@ -48,20 +49,28 @@ export default function OverviewTab({ onOpenTab }) {
         <Kpi icon={Award} label="Awards given" value={AWARDS.length} foot="skills achievements recognised" tone="ink" />
       </div>
 
+      {/* UPG-12 Surface B: the same four questions from the programme side, resolved against this account's role. */}
+      <FeatureMiniEntry anchor="analysis-to-action" titleKey="discover.mini.fromAnalysisToAction" ids={["action-tracking", "vup-rules", "referral-followup"]} />
+
       <div className="grid grid-cols-1 gap-4 xl:grid-cols-3">
-        <Card title="Program Members by skill" subtitle="Top 7 trained skills" className="xl:col-span-2">
-          <ResponsiveContainer width="100%" height={240}>
-            <BarChart data={skillDist} layout="vertical" margin={{ top: 4, right: 16, bottom: 0, left: 20 }}>
-              <CartesianGrid horizontal={false} stroke="#EDF1F7" />
-              <XAxis type="number" tick={{ fontSize: 10.5, fill: "#8A94A6" }} axisLine={false} tickLine={false} />
-              <YAxis type="category" dataKey="name" tick={{ fontSize: 10.5, fill: "#8A94A6" }} axisLine={false} tickLine={false} width={80} />
-              <Tooltip contentStyle={{ borderRadius: 8, border: "1px solid #E3E8EE", fontSize: 11 }} />
-              <Bar dataKey="count" name="Program Members" fill="#635BFF" radius={[0, 4, 4, 0]} barSize={14} />
-            </BarChart>
-          </ResponsiveContainer>
+        <Card title="Program Members by skill" subtitle="Top 7 trained skills" className="xl:col-span-2" data-tour="overview-skills-chart">
+          {/* UPG-09: a reader who cannot see the bars gets the same numbers in words, and every reader gets the
+              provenance line, so a panel record is never mistaken for a survey estimate. */}
+          <div role="img" aria-label={`Program members by skill, highest first. ${skillDist.map((item) => `${item.name}: ${item.count} member${item.count === 1 ? "" : "s"}`).join(". ") || "No skills recorded for this programme."}`}>
+            <ResponsiveContainer width="100%" height={240}>
+              <BarChart data={skillDist} layout="vertical" margin={{ top: 4, right: 16, bottom: 0, left: 20 }}>
+                <CartesianGrid horizontal={false} stroke="#EDF1F7" />
+                <XAxis type="number" tick={{ fontSize: 10.5, fill: "#8A94A6" }} axisLine={false} tickLine={false} />
+                <YAxis type="category" dataKey="name" tick={{ fontSize: 10.5, fill: "#8A94A6" }} axisLine={false} tickLine={false} width={80} />
+                <Tooltip contentStyle={{ borderRadius: 8, border: "1px solid #E3E8EE", fontSize: 11 }} />
+                <Bar dataKey="count" name="Program Members" fill="#635BFF" radius={[0, 4, 4, 0]} barSize={14} />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+          <p className="mt-2 text-[10.5px] leading-snug text-sub">Source: the {BENEFICIARIES.length} programme member records this panel holds, counted by skill. Demonstration panel records, not survey estimates.</p>
         </Card>
 
-        <Card title="Programmes" subtitle="Active initiatives" bodyClassName="px-0 pb-0">
+        <Card title="Programmes" subtitle="Active initiatives" bodyClassName="px-0 pb-0" data-tour="overview-programmes">
           <ul className="border-t border-hairline">
             {PROGRAMMES.map((p) => (
               <li key={p.name} className="flex items-center justify-between border-b border-hairline/70 px-5 py-2.5 last:border-0">
@@ -79,7 +88,7 @@ export default function OverviewTab({ onOpenTab }) {
       </div>
 
       <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
-        <Card title="Cooperatives" subtitle={`${coopView.inCoop} of ${coopView.total} program members are in a cooperative`}>
+        <Card title="Cooperatives" subtitle={`${coopView.inCoop} of ${coopView.total} program members are in a cooperative`} data-tour="overview-cooperatives">
           <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
             {coopView.rows.slice(0, 4).map(({ coop, members }) => (
               <div key={coop.id} className="rounded-lg border border-hairline px-3 py-2.5">
@@ -92,7 +101,7 @@ export default function OverviewTab({ onOpenTab }) {
           {onOpenTab && <button type="button" onClick={() => onOpenTab("cooperatives")} className="mt-3 text-[11.5px] font-medium text-brand hover:underline">See all cooperatives</button>}
         </Card>
 
-        <Card title="Recent awards" subtitle="Skills achievements">
+        <Card title="Recent awards" subtitle="Skills achievements" data-tour="overview-awards">
           <ul className="space-y-2">
             {AWARDS.slice(0, 4).map((a, i) => (
               <li key={i} className="flex items-center gap-3 rounded-lg border border-hairline px-3 py-2">

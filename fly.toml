@@ -1,0 +1,29 @@
+app = "ireme-governed-api"
+primary_region = "iad"
+
+[build]
+  dockerfile = "engine/Dockerfile"
+
+[env]
+  IREME_PROFILE = "HACKATHON_DEMO"
+  IREME_OPEN_DEMO = "1"
+  IREME_AGENT_CLEARANCE = "nisr-hackathon-demo-clearance"
+  IREME_AUTH_ISSUER = "https://ywtxpsefbqzmgmdfzldp.supabase.co/auth/v1"
+  IREME_JWKS_URL = "https://ywtxpsefbqzmgmdfzldp.supabase.co/auth/v1/.well-known/jwks.json"
+  IREME_AUTH_AUDIENCE = "authenticated"
+  IREME_CORS_ORIGINS = "https://poverty-analysis-reduction.vercel.app,https://poverty-analysis-reducti.vercel.app,https://poverty-analysis-reduction-iremesofthubs.vercel.app,https://poverty-analysis-reducti-iremesofthubs.vercel.app,http://localhost:5173,http://127.0.0.1:5173"
+  IREME_CATALOG_DB = "/app/catalog.db"
+  IREME_JOBS_DB = "/app/jobs.db"
+  PYTHON_VERSION = "3.12"
+
+[http_service]
+  internal_port = 8080
+  force_https = true
+  auto_stop_machines = true
+  auto_start_machines = true
+  min_machines_running = 0
+
+[[vm]]
+  memory = "512mb"
+  cpu_kind = "shared"
+  cpus = 1

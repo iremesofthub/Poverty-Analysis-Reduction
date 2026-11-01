@@ -7,6 +7,7 @@ import DistrictsTable from "@/components/analyst/support/DistrictsTable";
 import DistrictPanel from "@/components/analyst/support/DistrictPanel";
 import InfoTip, { HELP } from "@/components/analyst/support/InfoTip";
 import { DASHBOARD_SOURCES, EICV7_METHOD, NATIONAL_EICV7 } from "@/data/dashboardEvidence";
+import { contrastVerdict, coverage } from "@/lib/districtUncertainty";
 import { enrichRows, viewToCsv } from "@/lib/povertySupport";
 
 const VIEWS = [
@@ -29,7 +30,13 @@ export default function PovertySupportSection({ rows, province, selectedName, on
   const national = NATIONAL_EICV7;
   const data = useMemo(() => enrichRows(rows, national), [rows, national]);
   const selected = data.find((row) => row.name === selectedName) || null;
-  const reviewList = useMemo(() => data.filter((row) => row.quadrant.key === "reviewFirst" && row.marker.key !== "smallSample").sort((a, b) => b.poverty - a.poverty), [data]);
+  const reviewList = useMemo(() => data.filter((row) => row.quadrant.key === "reviewFirst" && row.marker.key !== "smallSample" && row.marker.key !== "withinRange").sort((a, b) => b.poverty - a.poverty), [data]);
+  const covered = coverage(data);
+  // States actual coverage of the current selection instead of claiming intervals
+  // for districts whose estimate could not be reconciled.
+  const intervalSummary = covered.withInterval
+    ? `Design-based 95% intervals, calculated with this repository's survey engine from the EICV7 strata and PSUs, cover ${covered.withInterval} of ${covered.total} districts here and ${covered.withContrast} have a tested difference from Rwanda. They are pending independent scientific review.`
+    : "District samples are small and confidence intervals were not calculated for this selection.";
 
   const setView = (key) => {
     setViewState(key);
@@ -53,7 +60,7 @@ export default function PovertySupportSection({ rows, province, selectedName, on
     setTimeout(() => URL.revokeObjectURL(url), 1000);
   };
 
-  const aiContext = `NISR EICV7 2023/24. Poverty is percent of district residents; VUP is household-weighted reported participation in any VUP component among surveyed poor households. Different denominators; do not subtract. National poverty ${national.poverty.toFixed(1)}%; national VUP participation among poor households ${national.vupAmongPoor.toFixed(1)}%. Districts in current filter: ${data.map((row) => `${row.name}: poverty ${row.poverty.toFixed(1)}%, VUP ${row.vupAmongPoor.toFixed(1)}% of ${row.samplePoorHouseholds} surveyed poor households`).join("; ")}. VUP participation does not measure all social support, eligibility, or actual payments. District confidence intervals are not provided.`;
+  const aiContext = `NISR EICV7 2023/24. Poverty is percent of district residents; VUP is household-weighted reported participation in any VUP component among surveyed poor households. Different denominators; do not subtract. National poverty ${national.poverty.toFixed(1)}%; national VUP participation among poor households ${national.vupAmongPoor.toFixed(1)}%. Districts in current filter: ${data.map((row) => `${row.name}: poverty ${row.poverty.toFixed(1)}%${row.povertyInterval ? ` [95% CI ${row.povertyInterval.low.toFixed(1)}-${row.povertyInterval.high.toFixed(1)}]` : " [interval not available]"}, VUP ${row.vupAmongPoor.toFixed(1)}% of ${row.samplePoorHouseholds} surveyed poor households${row.vupInterval ? ` [95% CI ${row.vupInterval.low.toFixed(1)}-${row.vupInterval.high.toFixed(1)}]` : ""}, ${contrastVerdict(row.povertyContrast).label.toLowerCase()}`).join("; ")}. VUP participation does not measure all social support, eligibility, or actual payments. Intervals are design-based (strata, PSUs, subpopulation variance) from the repository survey engine and are pending independent scientific review; ranking by point estimates is not a certified order.`;
 
   return (
     <Card
@@ -61,7 +68,7 @@ export default function PovertySupportSection({ rows, province, selectedName, on
       subtitle="Where is poverty highest, and how widely does VUP reach poor households?"
       className={className}
       inlineHelp
-      info="Each dot or row is a district. Poverty is the share of people below the EICV7 poverty line. VUP participation is the share of surveyed poor households that report taking part in a VUP programme. These count different groups, so never subtract one from the other. 'Review first' only means poverty is above the national rate while reported VUP participation is below its national rate. It does not show that support is missing or that a programme has failed."
+      info="Each dot or row is a district. Poverty is the share of people below the EICV7 poverty line. VUP participation is the share of surveyed poor households that report taking part in a VUP programme. These count different groups, so never subtract one from the other. 'Review first' only means poverty is above the national rate while reported VUP participation is below its national rate. Where a joint survey contrast against Rwanda exists and includes zero, the district is marked 'within national range' instead. It does not show that support is missing or that a programme has failed."
       aiInsight="Use the two measures as separate observations. Survey participation does not measure all social support or whether eligible households received the right service."
       aiContext={aiContext}
       action={<button type="button" onClick={exportView} disabled={!data.length} className="inline-flex h-6 items-center gap-1 rounded-md px-1.5 text-[11px] text-sub hover:bg-canvas hover:text-ink disabled:opacity-40 focus-visible:outline-2 focus-visible:outline-brand" aria-label="Export this view as CSV"><Download className="h-3 w-3" aria-hidden="true" />CSV</button>}
@@ -104,7 +111,7 @@ export default function PovertySupportSection({ rows, province, selectedName, on
 
       <div className="mt-3 border-t border-hairline pt-2 text-[10.5px] leading-relaxed text-[#8A94A6]">
         <p>
-          <a href={DASHBOARD_SOURCES.poverty} target="_blank" rel="noreferrer" className="underline underline-offset-2">Source: NISR EICV7</a> · 2023/24 survey. Poverty uses the January 2024 poverty line. VUP participation is reported participation among surveyed poor households, calculated with household weights. District samples are small and confidence intervals were not calculated.
+          <a href={DASHBOARD_SOURCES.poverty} target="_blank" rel="noreferrer" className="underline underline-offset-2">Source: NISR EICV7</a> · 2023/24 survey. Poverty uses the January 2024 poverty line. VUP participation is reported participation among surveyed poor households, calculated with household weights. {intervalSummary}
         </p>
         <button type="button" onClick={() => setShowMethod((value) => !value)} aria-expanded={showMethod} aria-controls="support-method" className="mt-1 inline-flex items-center gap-1 font-medium text-brand hover:underline focus-visible:outline-2 focus-visible:outline-brand">
           Methodology &amp; limitations<ChevronDown className={`h-3 w-3 transition-transform ${showMethod ? "rotate-180" : ""}`} aria-hidden="true" />

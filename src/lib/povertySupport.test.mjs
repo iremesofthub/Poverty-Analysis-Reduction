@@ -5,7 +5,10 @@ import {
   enrichRows,
   filterRows,
   formatInterval,
+  isContrastAssessed,
+  isDistinguishableFromNational,
   markerFor,
+  observationsFor,
   quadrantOf,
   qualityOf,
   reasonToReview,
@@ -95,4 +98,126 @@ test("CSV export keeps the figures and adds no derived gap column", () => {
   assert.ok(header.includes("sample_poor_households"));
   assert.ok(first.startsWith('"Bugesera"'));
   assert.ok(first.includes('"Not calculated"'));
+});
+
+// A review-first quadrant is a statement about two point estimates. Once the
+// design-based joint contrast against Rwanda exists, a district whose difference
+// falls inside sampling uncertainty must not be presented as a priority signal.
+const reviewCandidate = (contrast) => ({
+  name: "Test",
+  province: "Southern",
+  poverty: 40,
+  vupAmongPoor: 5,
+  samplePoorHouseholds: 120,
+  sampleHouseholds: 400,
+  povertyContrast: contrast,
+});
+
+test("a review-first district whose contrast includes zero is marked within range", () => {
+  const row = reviewCandidate({ difference: 3.1, ciLow: -0.4, ciHigh: 6.6, distinguishable: false });
+  assert.equal(quadrantOf(row, national).key, "reviewFirst");
+  assert.equal(markerFor(row, national).key, "withinRange");
+  assert.equal(isDistinguishableFromNational(row), false);
+  assert.equal(isContrastAssessed(row), true);
+  const text = reasonToReview({ ...row, marker: markerFor(row, national), quadrant: quadrantOf(row, national) });
+  assert.match(text, /includes zero/);
+  assert.match(text, /within sampling uncertainty/);
+  // The honest reading never asserts that support is missing.
+  assert.ok(!/fails|failed|under-?funded/i.test(text));
+});
+
+test("a review-first district with a contrast that excludes zero keeps the flag", () => {
+  const row = reviewCandidate({ difference: 8.2, ciLow: 4.1, ciHigh: 12.3, distinguishable: true });
+  assert.equal(markerFor(row, national).key, "twoSignals");
+  assert.equal(isDistinguishableFromNational(row), true);
+});
+
+test("an untested district is never labelled within range", () => {
+  // Absence of a contrast is absence of a test, not evidence of equality.
+  for (const contrast of [undefined, null, {}, { difference: NaN }]) {
+    const row = reviewCandidate(contrast);
+    assert.equal(markerFor(row, national).key, "twoSignals", `contrast ${JSON.stringify(contrast)}`);
+    assert.equal(isContrastAssessed(row), false);
+  }
+});
+
+test("small sample outranks the contrast marker", () => {
+  const row = { ...reviewCandidate({ difference: 3, ciLow: -1, ciHigh: 7, distinguishable: false }), samplePoorHouseholds: 12 };
+  assert.equal(markerFor(row, national).key, "smallSample");
+});
+
+test("observations state the interval and the contrast rather than implying certainty", () => {
+  const tested = reviewCandidate({ difference: 3.1, ciLow: -0.4, ciHigh: 6.6, distinguishable: false });
+  tested.povertyInterval = { low: 36.1, high: 43.9 };
+  const lines = observationsFor(tested, national).join(" ");
+  assert.match(lines, /between 36\.1% and 43\.9%/);
+  assert.match(lines, /not clearly different/i);
+  const untested = observationsFor(reviewCandidate(null), national).join(" ");
+  assert.match(untested, /has not been tested/i);
+  assert.ok(!/is not different/.test(untested));
+});
+
+test("CSV carries the contrast fields and says so when they are missing", () => {
+  const header = viewToCsv(rows.slice(0, 1), national).split("\r\n")[0];
+  for (const column of ["poverty_reliability", "vup_reliability", "contrast_vs_rwanda_points", "contrast_ci_points", "distinguishable_from_rwanda"]) {
+    assert.ok(header.includes(column), column);
+  }
+  const bare = viewToCsv([reviewCandidate(null)], national).split("\r\n")[1];
+  assert.ok(bare.includes('"not calculated"'));
+  assert.ok(bare.includes('"not tested"'));
+  const tested = viewToCsv([reviewCandidate({ difference: 3.1, ciLow: -0.4, ciHigh: 6.6, distinguishable: false })], national).split("\r\n")[1];
+  assert.ok(tested.includes("3.1"));
+  assert.ok(tested.includes('"-0.4 to 6.6"'));
+  assert.ok(tested.includes('"false"'));
+});
+
+const graded = (povertyGrade, vupGrade) => ({
+  name: "Test",
+  province: "Southern",
+  poverty: 40,
+  vupAmongPoor: 5,
+  samplePoorHouseholds: 120,
+  sampleHouseholds: 400,
+  povertyInterval: { low: 36, high: 44 },
+  vupInterval: { low: 2, high: 9 },
+  povertyEvidence: { reliability: povertyGrade },
+  vupEvidence: { reliability: vupGrade },
+});
+
+// The reliability grade comes from the estimator, not from this file, so the
+// wording has to follow it instead of always reassuring the reader.
+test("a low reliability grade is reported rather than hidden behind a tick", () => {
+  const low = qualityOf(graded("high", "low"));
+  assert.equal(low.key, "lowReliability");
+  assert.match(low.note, /coefficient of variation/i);
+  assert.match(low.note, /VUP/);
+  const bothLow = qualityOf(graded("low", "low"));
+  assert.equal(bothLow.key, "lowReliability");
+  assert.match(bothLow.note, /poverty/);
+});
+
+test("unreliable and unestimable grades are never shown as acceptable", () => {
+  for (const grade of ["unreliable", "unestimable"]) {
+    const quality = qualityOf(graded(grade, "high"));
+    assert.equal(quality.key, "unreliable");
+    assert.equal(quality.tone, "bad");
+    assert.match(quality.note, /must not be used as a headline number/i);
+  }
+});
+
+test("moderate grades still pass but say uncertainty is noticeable", () => {
+  const quality = qualityOf(graded("high", "moderate"));
+  assert.equal(quality.key, "assessed");
+  assert.equal(quality.tone, "ok");
+  assert.match(quality.note, /noticeable sampling uncertainty/i);
+});
+
+test("clean grades keep the short available message", () => {
+  assert.deepEqual(qualityOf(graded("high", "high")), { key: "assessed", label: "Interval available", tone: "ok", note: "Confidence intervals are available." });
+});
+
+test("a thin sample still reports the sample size before any grade", () => {
+  const quality = qualityOf({ ...graded("low", "low"), samplePoorHouseholds: 35 });
+  assert.equal(quality.key, "small");
+  assert.match(quality.note, /35 surveyed poor households/);
 });

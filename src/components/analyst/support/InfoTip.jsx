@@ -31,6 +31,6 @@ export const HELP = {
   poverty: "The percentage of people living below the poverty line (EICV7 2023/24). It counts people, not households.",
   vup: "Among households classified as poor, the weighted percentage that report taking part in a VUP programme (any of the five VUP survey sections). It measures reported participation, not payments received or who is eligible.",
   sample: "How many households were actually interviewed to build this estimate. It is a survey count, not the number of people or households in the district.",
-  interval: "A range showing how uncertain an estimate is. These intervals have not been calculated for this dataset, so small differences should be read with care.",
+  interval: "A range showing how uncertain an estimate is. These 95% intervals are design-based: they use the EICV7 sample weights, strata and primary sampling units, and they widen when a district has fewer surveyed households. They are calculated by this repository's survey engine and are pending independent scientific review. Where an interval is missing, the estimate could not be reconciled and no range is shown.",
   national: "The Rwanda-wide estimate for the same indicator, survey and period. Districts are compared with this line.",
 };

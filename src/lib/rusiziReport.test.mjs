@@ -129,3 +129,40 @@ test('the Markdown export contains the verification table, the correction and th
   assert.match(markdown, /\[EICV7 Main Indicators Report 2023\/24\]\(https:\/\/statistics\.gov\.rw/)
   assert.match(markdown, /## 8\. Appendices and references/)
 })
+
+test('the evidence quality figures in the report come from the recorded checks, not from the summary', () => {
+  const section = verificationSection(result)
+  assert.equal(section.quality.available, true)
+  assert.equal(section.quality.totals.registry, 10)
+  // The counts printed as evidence quality are the same recount that produced the table rows above them.
+  const group = (status) => verification.registry.filter((item) => item.verification_status === status).length
+  for (const [status, count] of Object.entries(section.quality.counts)) {
+    assert.equal(count, group(status), `${status} is a recount of the registry`)
+  }
+  assert.deepEqual(section.counts, section.quality.counts, "the section never publishes the number the summary claims about itself")
+  assert.equal(section.quality.countsMatchSummary, true)
+  assert.equal(section.quality.estimates.modelled, verification.registry.filter((item) => item.estimate_type === 'modelled').length)
+  assert.equal(section.quality.approvals.recorded, false, 'a green count is never presented as a human decision')
+})
+
+test('a summary that disagrees with its own registry is reported as a disagreement, not smoothed over', () => {
+  const lying = JSON.parse(JSON.stringify(verification))
+  lying.summary = { ...lying.summary, counts: { ...lying.summary.counts, verified_match: 10 } }
+  const section = verificationSection({ verification: lying })
+  assert.equal(section.quality.counts.verified_match, 7, 'the recount is what the reader sees')
+  assert.equal(section.quality.declaredCounts.verified_match, 10, 'the claim is kept so the disagreement is checkable')
+  assert.equal(section.quality.countsMatchSummary, false)
+})
+
+test('the exported document carries the same evidence-quality facts the screen shows', () => {
+  const report = assembleReport(parts, result, '2026-10-29T10:00:00Z')
+  const markdown = reportToMarkdown(report, { note: 'n', footer: 'f' })
+  assert.match(markdown, /### Evidence quality/)
+  assert.match(markdown, /Recounted from the 10 checks recorded by the engine/)
+  assert.match(markdown, /- Verified match: 7/)
+  assert.match(markdown, /Human scientific review: No human reviewer approval is recorded/)
+  assert.match(markdown, /Official documents read: 3 of 3/)
+  assert.match(markdown, /A passing count is not a release decision/)
+  // Nothing in the exported text may read as though a person signed the work off.
+  assert.doesNotMatch(markdown, /(certified|peer-reviewed|scientifically approved)/i)
+})

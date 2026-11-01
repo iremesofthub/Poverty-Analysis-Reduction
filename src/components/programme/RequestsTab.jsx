@@ -70,20 +70,20 @@ export default function RequestsTab() {
   const shown = requests.filter((item) => match[filter](item) && (district === "All" || item.district === district) && `${item.title} ${item.id} ${item.programme}`.toLowerCase().includes(q.toLowerCase()));
   const selected = requests.find((item) => item.id === openId);
 
-  return <div className="space-y-4">
-    <div className="grid grid-cols-2 gap-3 xl:grid-cols-4">
+  return <div data-judge="requests" className="space-y-4">
+    <div className="grid grid-cols-2 gap-3 xl:grid-cols-4" data-tour="requests-kpis">
       <Kpi icon={Inbox} label="Waiting for your decision" value={stats.waiting} foot="new requests from analysts" tone={stats.waiting ? "text-[#B54708]" : "text-brand"} />
       <Kpi icon={Loader2} label="In progress" value={stats.active} foot="accepted and being worked on" />
       <Kpi icon={CheckCircle2} label="Completed" value={stats.completed} foot={stats.averageDays != null ? `about ${stats.averageDays.toFixed(0)} days on average` : "none finished yet"} tone="text-[#067647]" />
       <Kpi icon={XCircle} label="Declined" value={stats.declined} foot="with a reason sent back" tone="text-[#B42318]" />
     </div>
-    <div className="flex flex-wrap items-center gap-2">
+    <div className="flex flex-wrap items-center gap-2" data-tour="requests-filters">
       <div className="flex flex-wrap gap-1.5">{FILTERS.map(([key, label]) => <button key={key} type="button" onClick={() => setFilter(key)} aria-pressed={filter === key} className={`rounded-full border px-3 py-1.5 text-[11.5px] font-medium ${filter === key ? "border-brand bg-brand-soft text-brand" : "border-hairline bg-white text-sub hover:text-ink"}`}>{label}</button>)}</div>
-      <div className="relative ml-auto min-w-[180px] flex-1 sm:max-w-xs"><Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#8A94A6]" /><input value={q} onChange={(event) => setQ(event.target.value)} placeholder="Search requests…" className="w-full rounded-md border border-hairline py-2 pl-9 pr-3 text-[12.5px] text-ink outline-none focus:border-brand" /></div>
+      <div className="relative ml-auto min-w-[180px] flex-1 sm:max-w-xs"><Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#8A94A6]" /><input value={q} onChange={(event) => setQ(event.target.value)} data-tour="requests-search" placeholder="Search requests…" className="w-full rounded-md border border-hairline py-2 pl-9 pr-3 text-[12.5px] text-ink outline-none focus:border-brand" /></div>
       <select value={district} onChange={(event) => setDistrict(event.target.value)} aria-label="District" className="rounded-md border border-hairline bg-white px-3 py-2 text-[12.5px] text-ink outline-none focus:border-brand">{districts.map((name) => <option key={name}>{name}</option>)}</select>
     </div>
     {shown.length === 0 ? <p className="rounded-xl border border-dashed border-hairline bg-white px-4 py-10 text-center text-[12.5px] text-sub">{requests.length === 0 ? "No requests yet. Analysts send them from a district investigation." : "No requests match these filters."}</p>
-      : <ul className="space-y-2.5">{shown.map((item) => <li key={item.id}><button type="button" onClick={() => setOpenId(item.id)} className={`flex w-full flex-wrap items-start justify-between gap-3 rounded-xl border bg-white p-4 text-left transition-colors hover:border-brand/40 ${openId === item.id ? "border-brand/50" : "border-hairline"}`}>
+      : <ul className="space-y-2.5" data-tour="requests-list">{shown.map((item) => <li key={item.id}><button type="button" onClick={() => setOpenId(item.id)} className={`flex w-full flex-wrap items-start justify-between gap-3 rounded-xl border bg-white p-4 text-left transition-colors hover:border-brand/40 ${openId === item.id ? "border-brand/50" : "border-hairline"}`}>
         <div className="min-w-0 flex-1"><p className="text-[10.5px] text-sub">{item.id} · {item.district} · {item.programme}{item.sample && <span className="ml-1.5 rounded bg-canvas px-1.5 py-0.5">sample</span>}</p><h3 className="mt-0.5 text-[13.5px] font-semibold text-ink">{item.title}</h3><p className="mt-1 line-clamp-2 text-[12px] leading-relaxed text-sub">{item.ask}</p></div>
         <div className="flex shrink-0 flex-col items-end gap-1.5"><StatusChip status={item.status} /><PriorityDot priority={item.priority} /><span className="inline-flex items-center gap-1 text-[10.5px] text-sub"><Clock className="h-3 w-3" />{ago(item.createdAt)}</span></div>
       </button></li>)}</ul>}

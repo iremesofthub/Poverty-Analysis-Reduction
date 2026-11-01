@@ -1,7 +1,7 @@
 import { Toaster } from "@/components/ui/toaster"
 import { QueryClientProvider } from '@tanstack/react-query'
 import { queryClientInstance } from '@/lib/query-client'
-import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import { BrowserRouter as Router, Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import PageNotFound from './lib/PageNotFound';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
@@ -9,8 +9,9 @@ import ScrollToTop from './components/ScrollToTop';
 // Add page imports here
 import AnalystDashboard from './pages/AnalystDashboard';
 import OtherAnalysis from './pages/OtherAnalysis';
-import DistrictInvestigation from './pages/DistrictInvestigation';
+import AIEngine from './pages/AIEngine';
 import FinancialMap from './pages/FinancialMap';
+import FinancialInclusion from './pages/FinancialInclusion';
 import Nst2Indicators from './pages/Nst2Indicators';
 import ProgrammeEvidence from './pages/ProgrammeEvidence';
 import DatasetDocumentation from './pages/DatasetDocumentation';
@@ -33,6 +34,8 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
+import AccountRequests from './pages/AccountRequests';
+import DataUpload from './pages/DataUpload';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -62,19 +65,25 @@ const AuthenticatedApp = () => {
     <Routes>
       {/* Add your page Route elements here */}
       <Route path="/ussd-sim" element={<UssdSimulator />} />
-      {/* Public dashboard: aggregate NISR/FinScope evidence only; no household records. */}
-      <Route path="/" element={<AnalystDashboard />} />
       <Route element={<DashboardShell />}>
+        <Route element={<RoleGuard roles={["platform_admin", "nisr_analyst"]} />}>
+          <Route path="/" element={<AnalystDashboard />} />
+        </Route>
         <Route element={<RoleGuard roles={["platform_admin"]} />}>
           <Route path="/ussd-control" element={<UssdControl />} />
+          <Route path="/account-requests" element={<AccountRequests />} />
         </Route>
         <Route element={<RoleGuard roles={Object.keys(ROLES)} />}>
           <Route path="/settings" element={<Settings />} />
+          {/* Every signed-in panel can open the governed research workspace, not only the analysts. */}
+          <Route path="/ai-engine" element={<AIEngine />} />
         </Route>
         <Route element={<RoleGuard roles={["platform_admin", "nisr_analyst"]} />}>
           <Route path="/other-analysis" element={<OtherAnalysis />} />
-          <Route path="/investigations" element={<DistrictInvestigation />} />
+          <Route path="/investigations" element={<LegacyInvestigationRedirect />} />
           <Route path="/nst2" element={<Nst2Indicators />} />
+          <Route path="/financial-inclusion" element={<FinancialInclusion />} />
+          <Route path="/data-upload" element={<DataUpload />} />
         </Route>
         <Route element={<RoleGuard roles={["platform_admin", "programme_owner"]} />}>
           <Route path="/programmes" element={<ProgrammeManagement />} />
@@ -116,6 +125,11 @@ const AuthenticatedApp = () => {
   );
 };
 
+
+function LegacyInvestigationRedirect() {
+  const location = useLocation();
+  return <Navigate to={{ pathname: "/ai-engine", search: location.search, hash: location.hash }} replace />;
+}
 
 function App() {
 

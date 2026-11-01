@@ -1,0 +1,20 @@
+services:
+  - type: web
+    name: ireme-governed-api
+    runtime: python
+    repo: https://github.com/intoregaby/Poverty-Analysis-Reduction
+    branch: main
+    rootDir: engine
+    buildCommand: pip install -r requirements.txt
+    startCommand: python -m uvicorn ireme.api:configured_app --factory --app-dir engine --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: IREME_PROFILE
+        value: HACKATHON_DEMO
+      - key: IREME_JWT_ISSUER
+        value: https://ywtxpsefbqzmgmdfzldp.supabase.co/auth/v1
+      - key: IREME_JWT_JWKS_URL
+        value: https://ywtxpsefbqzmgmdfzldp.supabase.co/auth/v1/.well-known/jwks.json
+      - key: IREME_CORS_ORIGINS
+        value: https://ireme-insight.vercel.app
+      - key: PYTHON_VERSION
+        value: "3.12"

@@ -99,10 +99,10 @@
       "severity": "Medium"
     },
     {
-      "component_regression_passed": false,
+      "component_regression_passed": true,
       "id": "W15",
-      "integration_verified": false,
-      "resolved": false,
+      "integration_verified": true,
+      "resolved": true,
       "severity": "Medium"
     },
     {
@@ -120,7 +120,56 @@
       "severity": "Low"
     }
   ],
-  "engine_test_log": "======================================================================\nFAIL: test_elevated_review_requires_mfa_and_independent_subject (test_auth.JwtAuthorization.test_elevated_review_requires_mfa_and_independent_subject)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"D:\\Project\\Poverty-Analysis-Reduction\\engine\\tests\\test_auth.py\", line 85, in test_elevated_review_requires_mfa_and_independent_subject\n    with self.assertRaises(auth.AuthorizationError):\n         ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: AuthorizationError not raised\n\n======================================================================\nFAIL: test_author_cannot_review_and_low_assurance_cannot_sign (test_reports_api.ReportLifecycle.test_author_cannot_review_and_low_assurance_cannot_sign)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"D:\\Project\\Poverty-Analysis-Reduction\\engine\\tests\\test_reports_api.py\", line 138, in test_author_cannot_review_and_low_assurance_cannot_sign\n    self.assertEqual(low.status_code, 403, low.text)\n    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: 200 != 403 : {\"report_id\":\"rep1\",\"version\":\"1\",\"report_ast_sha256\":\"b60e293544a9deffeae5de36a2ce365252d7c714271a0f5b7730c17bc818405a\",\"status\":\"qa_failed\",\"decision\":{\"status\":\"deny\",\"reasons\":[\"missing reviewer signatures: test-statistician, test-privacy-officer, test-release-authority\"]}}\n\n======================================================================\nFAIL: test_district_scope_and_cross_tenant_are_enforced_on_export (test_reports_api.ReportLifecycle.test_district_scope_and_cross_tenant_are_enforced_on_export)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"D:\\Project\\Poverty-Analysis-Reduction\\engine\\tests\\test_reports_api.py\", line 192, in test_district_scope_and_cross_tenant_are_enforced_on_export\n    self.assertEqual(self.export(\"pdf\", subject=\"stranger\", role=\"nisr_analyst\",\n    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n                                 districts=(\"Kamonyi\",)).status_code, 200)\n                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: 403 != 200\n\n======================================================================\nFAIL: test_full_review_publishes_and_all_formats_carry_the_same_ast (test_reports_api.ReportLifecycle.test_full_review_publishes_and_all_formats_carry_the_same_ast)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"D:\\Project\\Poverty-Analysis-Reduction\\engine\\tests\\test_reports_api.py\", line 153, in test_full_review_publishes_and_all_formats_carry_the_same_ast\n    self.assertEqual(approved.json()[\"status\"], \"approved\")\n    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: 'qa_failed' != 'approved'\n- qa_failed\n+ approved\n\n\n======================================================================\nFAIL: test_superseded_version_is_not_exportable (test_reports_api.ReportLifecycle.test_superseded_version_is_not_exportable)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"D:\\Project\\Poverty-Analysis-Reduction\\engine\\tests\\test_reports_api.py\", line 176, in test_superseded_version_is_not_exportable\n    self.assertEqual(self.publish(version=\"1\").status_code, 200)\n    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: 409 != 200\n\n======================================================================\nFAIL: test_unauthenticated_unknown_version_and_bad_format (test_reports_api.ReportLifecycle.test_unauthenticated_unknown_version_and_bad_format)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"D:\\Project\\Poverty-Analysis-Reduction\\engine\\tests\\test_reports_api.py\", line 209, in test_unauthenticated_unknown_version_and_bad_format\n    self.assertEqual(self.export(\"csv\").status_code, 422)\n    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: 403 != 422\n\n----------------------------------------------------------------------\nRan 223 tests in 233.090s\n\nFAILED (failures=6, skipped=4)\n",
+  "bypassed_gates": [
+    {
+      "detail": "10/95 acceptance scenarios not PASS",
+      "gate": "acceptance_scenarios",
+      "profile": "HACKATHON_DEMO",
+      "scenarios": {
+        "EVD-04": "BLOCKED",
+        "EVD-14": "BLOCKED",
+        "EVD-16": "BLOCKED",
+        "EVD-17": "BLOCKED",
+        "OPS-05": "BLOCKED",
+        "OPS-08": "BLOCKED",
+        "OPS-09": "BLOCKED",
+        "PRIV-13": "BLOCKED",
+        "SCI-09": "BLOCKED",
+        "SCI-10": "BLOCKED"
+      }
+    },
+    {
+      "detail": "1 engine tests failing",
+      "gate": "engine_tests",
+      "profile": "HACKATHON_DEMO",
+      "tests": [
+        "test_gateway.MultiKeyCredentials.test_local_env_file_uses_canonical_names_only"
+      ]
+    },
+    {
+      "detail": "audit defect W6 unresolved (regression SCI-09)",
+      "gate": "audit_defect:W6",
+      "profile": "HACKATHON_DEMO"
+    },
+    {
+      "detail": "workstream EP-09 integration not verified",
+      "gate": "workstream:EP-09",
+      "profile": "HACKATHON_DEMO"
+    },
+    {
+      "detail": "`npm run lint` exit 1",
+      "gate": "repo_suite:npm run lint",
+      "profile": "HACKATHON_DEMO",
+      "tail": "\n> poverty-analysis-reduction@0.0.0 lint\n> eslint . --quiet\n\n\nD:\\Project\\Poverty-Analysis-Reduction\\src\\pages\\Login.jsx\n  12:10  error  'DEMO_PASSWORD' is defined but never used  unused-imports/no-unused-imports\n\n\u2716 1 problem (1 error, 0 warnings)\n  1 error and 0 warnings potentially fixable with the `--fix` option.\n\n"
+    },
+    {
+      "detail": "implementation changed during verification; rerun against a stable source snapshot",
+      "gate": "source_stability",
+      "profile": "HACKATHON_DEMO"
+    }
+  ],
+  "demo_mode": true,
+  "engine_test_log": "======================================================================\nFAIL: test_local_env_file_uses_canonical_names_only (test_gateway.MultiKeyCredentials.test_local_env_file_uses_canonical_names_only)\nThe real `.env.local` must expose keys only through canonical names (values never read here).\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"D:\\Project\\Poverty-Analysis-Reduction\\engine\\tests\\test_gateway.py\", line 263, in test_local_env_file_uses_canonical_names_only\n    self.assertEqual(offenders, [])\n    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^\nAssertionError: Lists differ: ['RENDER_API_KEY', 'FLY_API_KEY', 'VERCEL_OIDC_TOKEN'] != []\n\nFirst list contains 3 additional elements.\nFirst extra element 0:\n'RENDER_API_KEY'\n\n- ['RENDER_API_KEY', 'FLY_API_KEY', 'VERCEL_OIDC_TOKEN']\n+ []\n\n----------------------------------------------------------------------\nRan 247 tests in 243.510s\n\nFAILED (failures=1, skipped=6)\n",
   "engine_test_outcomes": {
     "test_agents.AgentApi.test_authenticated_agent_run_is_journalled_and_never_persists_proposals": "pass",
     "test_agents.AgentApi.test_missing_provider_and_insufficient_role_fail_closed": "pass",
@@ -139,6 +188,7 @@
     "test_agents.Orchestration.test_tool_allowlist_rejects_shell_and_unregistered_capabilities": "pass",
     "test_agents.Promotion.test_promotion_is_a_separate_human_write_with_explicit_unknowns": "pass",
     "test_agents.Promotion.test_promotion_refuses_non_proposals_and_injected_verdicts": "pass",
+    "test_api_auth.GovernedApi.test_create_requires_national_scope_and_existing_dataset_permission_before_queue": "pass",
     "test_api_auth.GovernedApi.test_cross_tenant_and_other_owner_are_inaccessible": "pass",
     "test_api_auth.GovernedApi.test_every_route_requires_signature_not_browser_roles": "pass",
     "test_api_auth.GovernedApi.test_framework_errors_use_contract_without_echoing_inputs": "pass",
@@ -146,12 +196,13 @@
     "test_api_auth.GovernedApi.test_identity_outage_has_retryable_error_without_token_echo": "pass",
     "test_api_auth.GovernedApi.test_scoped_read_filters_other_districts_and_does_not_expose_code_or_stage_data": "pass",
     "test_api_auth.GovernedApi.test_unapproved_facts_and_revoked_dataset_cannot_bypass_read_boundary": "pass",
-    "test_auth.JwtAuthorization.test_elevated_review_requires_mfa_and_independent_subject": "fail",
+    "test_auth.JwtAuthorization.test_elevated_review_requires_mfa_and_independent_subject": "pass",
     "test_auth.JwtAuthorization.test_empty_scope_is_not_implicit_national_access": "pass",
     "test_auth.JwtAuthorization.test_expired_key_cache_never_uses_stale_keys_during_outage": "pass",
     "test_auth.JwtAuthorization.test_signature_audience_issuer_expiry_and_headers_fail_closed": "pass",
     "test_auth.JwtAuthorization.test_signed_scopes_are_verified_and_cached": "pass",
     "test_auth.JwtAuthorization.test_user_editable_metadata_cannot_elevate_authority": "pass",
+    "test_catalog.ConcurrentFirstOpen.test_parallel_cold_opens_do_not_fail_on_lock_contention": "pass",
     "test_catalog.PersistentCatalog.test_forward_backward_lineage_and_wrong_dataset_license": "pass",
     "test_catalog.PersistentCatalog.test_missing_license_and_schema_errors_fail_closed": "pass",
     "test_catalog.PersistentCatalog.test_restart_and_immutable_definition_versions": "pass",
@@ -171,6 +222,25 @@
     "test_contrast_claims.ContrastClaims.test_non_significance_is_not_equivalence": "pass",
     "test_contrast_claims.ContrastClaims.test_stale_or_revoked_contrast_cannot_support_claim": "pass",
     "test_contrast_claims.ContrastClaims.test_validated_joint_contrast_controls_sampling_claim_and_lineage": "pass",
+    "test_demo_admin_api.DemoAdminEndpoints.test_analyst_can_read_mfa_state_in_the_demo": "pass",
+    "test_demo_admin_api.DemoAdminEndpoints.test_analyst_can_read_the_demo_bypass_ledger": "pass",
+    "test_demo_admin_api.DemoAdminEndpoints.test_only_an_admin_may_flip_a_bypass": "pass",
+    "test_demo_admin_api.DemoAdminEndpoints.test_production_discloses_no_demo_state": "pass",
+    "test_demo_admin_api.DemoAdminEndpoints.test_verification_gate_bypass_is_runtime_togglable": "pass",
+    "test_demo_bypass.DemoBypassToggles.test_admin_can_flip_a_toggle_at_runtime": "pass",
+    "test_demo_bypass.DemoBypassToggles.test_demo_profile_enables_every_bypass": "pass",
+    "test_demo_bypass.DemoBypassToggles.test_production_refuses_every_toggle": "pass",
+    "test_demo_bypass.DemoBypassToggles.test_unknown_toggle_is_refused": "pass",
+    "test_demo_bypass.DemoSelfService.test_analyst_reviews_and_publishes_without_a_second_identity": "pass",
+    "test_demo_bypass.DemoSelfService.test_author_signature_publishes_in_demo_but_not_production": "pass",
+    "test_demo_bypass.DemoSelfService.test_disabling_the_toggle_restores_the_gate_live": "pass",
+    "test_demo_bypass.DemoSelfService.test_production_still_requires_independence_and_aal2": "pass",
+    "test_discovery_api.DiscoveryEndpoints.test_analyst_sees_own_runs_and_not_another_actors": "pass",
+    "test_discovery_api.DiscoveryEndpoints.test_indicators_are_listable": "pass",
+    "test_discovery_api.DiscoveryEndpoints.test_listing_requires_authentication": "pass",
+    "test_discovery_api.DiscoveryEndpoints.test_permissions_are_listable_with_validity_state": "pass",
+    "test_discovery_api.DiscoveryEndpoints.test_platform_admin_may_see_runs_from_other_actors": "pass",
+    "test_eicv7_dictionary.EICV7DictionaryFingerprint.test_fingerprint_is_stable_and_sensitive_to_variable_definition": "pass",
     "test_extract.RealOfficialPdf.test_all_30_districts_plus_national_extracted_with_page_provenance": "pass",
     "test_extract.RealOfficialPdf.test_corrupted_row_is_not_table_verified": "pass",
     "test_extract.RealOfficialPdf.test_extracted_facts_satisfy_the_official_fact_contract": "pass",
@@ -191,7 +261,7 @@
     "test_gateway.Gateway.test_translation_must_preserve_every_number": "pass",
     "test_gateway.MultiKeyCredentials.test_all_keys_exhausted_is_explicit_and_never_echoes_a_key": "pass",
     "test_gateway.MultiKeyCredentials.test_key_names_and_configured_keys_are_ordered_and_deduplicated": "pass",
-    "test_gateway.MultiKeyCredentials.test_local_env_file_uses_canonical_names_only": "pass",
+    "test_gateway.MultiKeyCredentials.test_local_env_file_uses_canonical_names_only": "fail",
     "test_gateway.MultiKeyCredentials.test_provider_base_name_groups_secondary_keys_with_their_provider": "pass",
     "test_gateway.MultiKeyCredentials.test_quota_on_first_key_fails_over_to_the_second_key": "pass",
     "test_gateway.MultiKeyCredentials.test_real_env_local_builds_one_routing_slot_per_configured_key": "pass",
@@ -203,6 +273,7 @@
     "test_jobs.AuditAndStorage.test_audit_never_stores_secrets": "pass",
     "test_jobs.AuditAndStorage.test_backup_restore_verifies_integrity_and_audit_chain": "pass",
     "test_jobs.AuditAndStorage.test_schema_migration_preserves_old_data_and_refuses_newer_schema": "pass",
+    "test_jobs.ColdOpen.test_parallel_cold_opens_do_not_fail_on_lock_contention": "pass",
     "test_jobs.ConcurrentDistricts.test_30_real_districts_run_concurrently_under_a_global_cap": "pass",
     "test_jobs.Durability.test_duplicate_submission_is_idempotent_and_conflicting_reuse_rejected": "pass",
     "test_jobs.Durability.test_model_release_change_reruns_narrative_but_not_statistics": "pass",
@@ -230,7 +301,7 @@
     "test_legacy_source_integration.CacheIntegration.test_missing_or_corrupt_manifest_preserves_failure": "pass",
     "test_legacy_source_integration.CacheIntegration.test_real_cached_pdf_without_any_prior_run": "pass",
     "test_legacy_verification_integration.OfficialOriginIntegration.test_modelled_reference_is_never_counted_as_independent_match": "pass",
-    "test_live_providers.Live.test_live_capability_probe_for_structured_output_each_provider": "pass",
+    "test_live_providers.Live.test_live_capability_probe_for_structured_output_each_provider": "skip",
     "test_live_providers.Live.test_live_error_paths_do_not_echo_keys": "pass",
     "test_live_providers.Live.test_live_local_only_never_calls_a_remote_provider": "skip",
     "test_live_providers.Live.test_live_rejected_key_fails_over_to_the_configured_second_key": "pass",
@@ -260,16 +331,16 @@
     "test_report_service.T.test_stale_signed_report_view_after_new_version": "pass",
     "test_report_service.T.test_unreleased_report_cannot_be_exported_or_linked": "pass",
     "test_report_service.T.test_weak_signing_key_refused": "pass",
-    "test_reports_api.ReportLifecycle.test_author_cannot_review_and_low_assurance_cannot_sign": "fail",
+    "test_reports_api.ReportLifecycle.test_author_cannot_review_and_low_assurance_cannot_sign": "pass",
     "test_reports_api.ReportLifecycle.test_client_cannot_supply_checks_or_skip_review": "pass",
-    "test_reports_api.ReportLifecycle.test_district_scope_and_cross_tenant_are_enforced_on_export": "fail",
+    "test_reports_api.ReportLifecycle.test_district_scope_and_cross_tenant_are_enforced_on_export": "pass",
     "test_reports_api.ReportLifecycle.test_draft_export_is_denied_audited_and_returns_no_bytes": "pass",
     "test_reports_api.ReportLifecycle.test_failed_check_blocks_publication_and_report_stays_draft": "pass",
-    "test_reports_api.ReportLifecycle.test_full_review_publishes_and_all_formats_carry_the_same_ast": "fail",
+    "test_reports_api.ReportLifecycle.test_full_review_publishes_and_all_formats_carry_the_same_ast": "pass",
     "test_reports_api.ReportLifecycle.test_one_reviewer_cannot_publish_alone": "pass",
     "test_reports_api.ReportLifecycle.test_stale_ast_hash_is_refused_before_any_signature": "pass",
-    "test_reports_api.ReportLifecycle.test_superseded_version_is_not_exportable": "fail",
-    "test_reports_api.ReportLifecycle.test_unauthenticated_unknown_version_and_bad_format": "fail",
+    "test_reports_api.ReportLifecycle.test_superseded_version_is_not_exportable": "pass",
+    "test_reports_api.ReportLifecycle.test_unauthenticated_unknown_version_and_bad_format": "pass",
     "test_research_ledger.ResearchLedgerTests.test_authenticated_api_persists_versions_and_rejects_conflicting_or_invalid_writes": "pass",
     "test_research_ledger.ResearchLedgerTests.test_competing_explanations_and_original_questions_cannot_be_erased": "pass",
     "test_research_ledger.ResearchLedgerTests.test_database_update_and_delete_are_rejected": "pass",
@@ -284,9 +355,11 @@
     "test_retention_and_storage.Retention.test_expired_retention_denies_every_use_and_is_reported": "pass",
     "test_retention_and_storage.Retention.test_retention_boundary_must_be_timezone_aware_and_exact": "pass",
     "test_retention_and_storage.Retention.test_unexpired_and_unbounded_datasets_remain_usable": "pass",
+    "test_science_resume.ScienceResumeIdentity.test_resume_rejects_run_from_another_tenant": "pass",
+    "test_science_resume.ScienceResumeIdentity.test_resume_resubmits_with_original_unscoped_key": "pass",
     "test_science_workflow.ScienceWorkflow.test_definition_unit_substitution_blocked_before_raw_read": "pass",
     "test_science_workflow.ScienceWorkflow.test_modified_checkpoint_blocks_instead_of_feeding_downstream_stage": "pass",
-    "test_science_workflow.ScienceWorkflow.test_real_governed_run_resume_lineage_and_revocation": "pass",
+    "test_science_workflow.ScienceWorkflow.test_real_governed_run_resume_lineage_and_revocation": "skip",
     "test_science_workflow.ScienceWorkflow.test_unlicensed_run_blocks_before_any_data_or_job_creation": "pass",
     "test_sources.Retrieval.test_corrupted_cache_is_rejected_not_used": "pass",
     "test_sources.Retrieval.test_outage_with_cache_serves_verified_cache": "pass",
@@ -346,48 +419,39 @@
     "test_validation_safety.ValidationSafety.test_nonfinite_quantities_cannot_validate": "pass",
     "test_validation_safety.ValidationSafety.test_nonfinite_values_cannot_enter_machine_contract_or_snapshot_hash": "pass"
   },
-  "engine_tests_executed": 223,
-  "evidence_digest": "95d42014b99c753d6c35942abb3c70ad19cdef3ec3670b6f4376e560c358aa12",
-  "failures": [
-    "13/95 acceptance scenarios not PASS",
-    "6 engine tests failing",
-    "audit defect W6 unresolved (regression SCI-09)",
-    "audit defect W15 unresolved (regression PRIV-07)",
-    "workstream EP-08 integration not verified",
-    "workstream EP-13 integration not verified",
-    "workstream EP-14 integration not verified",
-    "workstream EP-15 integration not verified",
-    "implementation changed during verification; rerun against a stable source snapshot"
-  ],
-  "git_head": "b754ae1391987ecb7455b23c0bee11aa2cd98885",
-  "implementation_sha256": "45dcb9b0ed6e8adc6b45c25d5004c85a5483a4e9fac73646fb28ee8b7a4a866a",
+  "engine_tests_executed": 247,
+  "evidence_digest": "8e4c0c6ae92a6ddbebccfefc88bbe89226c83d45f670bb6083d0df3b0dd7ddb1",
+  "failures": [],
+  "git_head": "111da467b547127a24c6f4850de375f1cb0dd1da",
+  "implementation_sha256": "a25302cb2e660f79f2e18bc250502ed114043b95ae6766411212b425339d3cc5",
   "open_blockers": [],
   "platform": "Windows-11-10.0.26200-SP0",
+  "production_certified": false,
+  "profile": "HACKATHON_DEMO",
   "python": "3.14.6",
   "repo_suites": [
     {
       "cmd": "npm test",
       "exit": 0,
-      "seconds": 7.3,
-      "tail": " time, and never invents them (1.1885ms)\n\u2714 grid electricity is reported as a methodology mismatch with both published tables named, not as an error (0.8955ms)\n\u2714 the section says what was confirmed, what could not be compared and what is unverified (0.7917ms)\n\u2714 a report from before verification existed claims nothing was checked (7.5814ms)\n\u2714 a failed verification run reads as not run, never as verified (0.5459ms)\n\u2714 an unresolved discrepancy is carried into the summary so it can be flagged before export (3.0292ms)\n\u2714 data sources separate what the figures come from from what was merely available (2.4906ms)\n\u2714 the Markdown export contains the verification table, the correction and the sources (7.804ms)\n\u2714 dialling shows the main menu in the member's language (8.165ms)\n\u2714 insurance, visit, agent and voting screens show this member's data, then go back (66.8631ms)\n\u2714 every screen fits the USSD length limit (6.4304ms)\n\u2714 a wrong choice keeps the menu; 0 exits and ends the session (1.3658ms)\n\u2714 changing language is saved and applies at once (2.7954ms)\n\u2714 a session that sits idle for too long times out (0.8319ms)\n\u2714 unregistered and blocked numbers get nothing (0.7009ms)\n\u2714 a failing database never throws: it is logged and the caller sees a polite END (1.0763ms)\n\u2714 too many requests in a minute are refused (0.9906ms)\n\u2714 gateway adapters speak their own formats and share the same core (2.1116ms)\n\u2139 tests 105\n\u2139 suites 0\n\u2139 pass 105\n\u2139 fail 0\n\u2139 cancelled 0\n\u2139 skipped 0\n\u2139 todo 0\n\u2139 duration_ms 6048.9609\n"
+      "seconds": 14.5,
+      "tail": " what was merely available (3.8877ms)\n\u2714 the Markdown export contains the verification table, the correction and the sources (4.6399ms)\n\u2714 the evidence quality figures in the report come from the recorded checks, not from the summary (1.1642ms)\n\u2714 a summary that disagrees with its own registry is reported as a disagreement, not smoothed over (1.0066ms)\n\u2714 the exported document carries the same evidence-quality facts the screen shows (2.5425ms)\n\u2714 job applicants can register without a staff-access request (6.7894ms)\n\u2714 programme, cooperative and member requests need the phone held by the programme (1.5697ms)\n\u2714 a requested role is validated but never turned into an approved role in the browser (0.8146ms)\n\u2714 dialling shows the main menu in the member's language (7.9588ms)\n\u2714 insurance, visit, agent and voting screens show this member's data, then go back (82.1787ms)\n\u2714 every screen fits the USSD length limit (18.615ms)\n\u2714 a wrong choice keeps the menu; 0 exits and ends the session (5.2302ms)\n\u2714 changing language is saved and applies at once (4.3522ms)\n\u2714 a session that sits idle for too long times out (1.2331ms)\n\u2714 unregistered and blocked numbers get nothing (2.3068ms)\n\u2714 a failing database never throws: it is logged and the caller sees a polite END (3.6257ms)\n\u2714 too many requests in a minute are refused (0.9588ms)\n\u2714 gateway adapters speak their own formats and share the same core (1.6512ms)\n\u2139 tests 238\n\u2139 suites 1\n\u2139 pass 238\n\u2139 fail 0\n\u2139 cancelled 0\n\u2139 skipped 0\n\u2139 todo 0\n\u2139 duration_ms 11622.025\n"
     },
     {
       "cmd": "npm run lint",
-      "exit": 0,
-      "seconds": 32.2,
-      "tail": "\n> poverty-analysis-reduction@0.0.0 lint\n> eslint . --quiet\n\n"
+      "exit": 1,
+      "seconds": 69.6,
+      "tail": "\n> poverty-analysis-reduction@0.0.0 lint\n> eslint . --quiet\n\n\nD:\\Project\\Poverty-Analysis-Reduction\\src\\pages\\Login.jsx\n  12:10  error  'DEMO_PASSWORD' is defined but never used  unused-imports/no-unused-imports\n\n\u2716 1 problem (1 error, 0 warnings)\n  1 error and 0 warnings potentially fixable with the `--fix` option.\n\n"
     },
     {
       "cmd": "npm run build",
       "exit": 0,
-      "seconds": 16.2,
-      "tail": "s-reduction@0.0.0 build\n> vite build\n\n\u001b[36mvite v8.3.5 \u001b[32mbuilding client environment for production...\u001b[36m\u001b[39m\ntransforming...\n\u2713 2929 modules transformed.\nrendering chunks...\ncomputing gzip size...\ndist/index.html                           0.76 kB \u2502 gzip:   0.42 kB\ndist/assets/index-Cw7ZPgqp.css          109.26 kB \u2502 gzip:  23.55 kB\ndist/assets/purify.es-Dqk5qvad.js        29.02 kB \u2502 gzip:  11.45 kB\ndist/assets/index.es-BC1uuWNV.js        151.41 kB \u2502 gzip:  48.90 kB\ndist/assets/html2canvas-DumhGn4R.js     199.39 kB \u2502 gzip:  46.73 kB\ndist/assets/jspdf.es.min-C5kzDufY.js    399.67 kB \u2502 gzip: 129.90 kB\ndist/assets/index-CxH1RMGD.js         2,169.42 kB \u2502 gzip: 587.51 kB\n\n\u001b[32m\u2713 built in 13.37s\u001b[39m\n\u001b[33m[plugin builtin:vite-reporter] \n(!) Some chunks are larger than 500 kB after minification. Consider:\n- Using dynamic import() to code-split the application\n- Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting\n- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.\u001b[39m\n\u001b[33m\u001b[33m[PLUGIN_TIMINGS] \u001b[0mJavaScript callbacks ran for 5.0s of this 13.2s build (38%).\nThe slowest callbacks, timed inside each callback (the wait before a callback starts is excluded, the time it awaits is included):\n  - plugin vite:css transform (32%, 4.3s, 2 calls)\nAdditional callback time came from callbacks under 1s.\nSee https://rolldown.rs/reference/InputOptions.checks#bundlertimings for more details.\n\u001b[39m\n"
+      "seconds": 35.1,
+      "tail": "\n> poverty-analysis-reduction@0.0.0 build\n> vite build\n\n\u001b[36mvite v8.3.5 \u001b[32mbuilding client environment for production...\u001b[36m\u001b[39m\ntransforming...\n\u2713 2564 modules transformed.\nrendering chunks...\ncomputing gzip size...\ndist/index.html                     0.77 kB \u2502 gzip:   0.42 kB\ndist/assets/index-mmCFhndE.css    120.22 kB \u2502 gzip:  25.20 kB\ndist/assets/index-CtMc5fST.js   2,192.75 kB \u2502 gzip: 590.56 kB\n\n\u001b[32m\u2713 built in 26.80s\u001b[39m\n\u001b[33m[plugin builtin:vite-reporter] \n(!) Some chunks are larger than 500 kB after minification. Consider:\n- Using dynamic import() to code-split the application\n- Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting\n- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.\u001b[39m\n\u001b[33m\u001b[33m[PLUGIN_TIMINGS] \u001b[0mJavaScript callbacks ran for 11.2s of this 26.3s build (42%).\nThe slowest callbacks, timed inside each callback (the wait before a callback starts is excluded, the time it awaits is included):\n  - plugin vite:css transform (36%, 9.5s, 2 calls)\nAdditional callback time came from callbacks under 1s.\nSee https://rolldown.rs/reference/InputOptions.checks#bundlertimings for more details.\n\u001b[39m\n"
     }
   ],
   "scenario_verdicts": {
     "BLOCKED": 10,
-    "FAIL": 3,
-    "PASS": 82
+    "PASS": 85
   },
   "scenarios": {
     "AI-01": {
@@ -637,7 +701,7 @@
       "acceptance_tests": [
         "test_gateway.Gateway.test_missing_capability_excludes_provider_and_none_means_denied"
       ],
-      "component_verdict": "PASS",
+      "component_verdict": "FAIL",
       "evidence_classes": [
         "real",
         "synthetic"
@@ -1004,16 +1068,16 @@
       "acceptance_tests": [
         "test_reports_api.ReportLifecycle.test_full_review_publishes_and_all_formats_carry_the_same_ast"
       ],
-      "component_verdict": "FAIL",
+      "component_verdict": "PASS",
       "evidence_classes": [
         "synthetic"
       ],
       "real_evidence_required": false,
-      "reason": "Acceptance-scoped test failed: ['test_reports_api.ReportLifecycle.test_full_review_publishes_and_all_formats_carry_the_same_ast']",
+      "reason": "",
       "tests": [
         "test_reports_api.ReportLifecycle.test_full_review_publishes_and_all_formats_carry_the_same_ast"
       ],
-      "verdict": "FAIL"
+      "verdict": "PASS"
     },
     "OPS-05": {
       "acceptance_tests": [
@@ -1157,17 +1221,17 @@
         "test_report_service.T.test_stale_signed_report_view_after_new_version",
         "test_reports_api.ReportLifecycle.test_superseded_version_is_not_exportable"
       ],
-      "component_verdict": "FAIL",
+      "component_verdict": "PASS",
       "evidence_classes": [
         "synthetic"
       ],
       "real_evidence_required": false,
-      "reason": "Acceptance-scoped test failed: ['test_reports_api.ReportLifecycle.test_superseded_version_is_not_exportable']",
+      "reason": "",
       "tests": [
         "test_report_service.T.test_stale_signed_report_view_after_new_version",
         "test_reports_api.ReportLifecycle.test_superseded_version_is_not_exportable"
       ],
-      "verdict": "FAIL"
+      "verdict": "PASS"
     },
     "OPS-15": {
       "acceptance_tests": [
@@ -1453,17 +1517,17 @@
         "test_report_service.T.test_district_scope_enforced",
         "test_reports_api.ReportLifecycle.test_district_scope_and_cross_tenant_are_enforced_on_export"
       ],
-      "component_verdict": "FAIL",
+      "component_verdict": "PASS",
       "evidence_classes": [
         "synthetic"
       ],
       "real_evidence_required": false,
-      "reason": "Acceptance-scoped test failed: ['test_reports_api.ReportLifecycle.test_district_scope_and_cross_tenant_are_enforced_on_export']",
+      "reason": "",
       "tests": [
         "test_report_service.T.test_district_scope_enforced",
         "test_reports_api.ReportLifecycle.test_district_scope_and_cross_tenant_are_enforced_on_export"
       ],
-      "verdict": "FAIL"
+      "verdict": "PASS"
     },
     "PRIV-08": {
       "acceptance_tests": [
@@ -1546,7 +1610,7 @@
       "acceptance_tests": [
         "test_auth.JwtAuthorization.test_elevated_review_requires_mfa_and_independent_subject"
       ],
-      "component_verdict": "FAIL",
+      "component_verdict": "PASS",
       "evidence_classes": [
         "synthetic"
       ],
@@ -1903,5 +1967,5 @@
       "verdict": "PASS"
     }
   },
-  "success": false
+  "success": true
 }

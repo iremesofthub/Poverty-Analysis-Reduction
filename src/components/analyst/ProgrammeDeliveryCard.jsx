@@ -42,7 +42,7 @@ export default function ProgrammeDeliveryCard({ rows, className = "" }) {
           <td className="px-2 tabular-nums">{delivery.hasRecords ? <span className={delivery.enrolmentIssueShare >= 0.18 ? "font-medium text-[#B54708]" : "text-ink"}>{pct(delivery.enrolmentIssueShare)}</span> : <span className="text-sub">n/a</span>}</td>
           <td className="px-2 tabular-nums text-ink">{delivery.requests.open || delivery.requests.completed ? `${delivery.requests.open} open · ${delivery.requests.completed} done` : <span className="text-sub">none</span>}</td>
           <td className="px-2"><span className={`inline-block rounded-full px-2 py-1 text-[10px] font-medium ${TONE[signal.tone]}`}>{signal.label}</span></td>
-          <td className="py-2 pl-2 text-right"><Link to={`/investigations?district=${encodeURIComponent(row.name)}`} className="whitespace-nowrap text-[11px] font-medium text-brand hover:underline">Investigate →</Link></td>
+          <td className="py-2 pl-2 text-right"><Link to={`/ai-engine?district=${encodeURIComponent(row.name)}`} className="whitespace-nowrap text-[11px] font-medium text-brand hover:underline">Open AI Engine →</Link></td>
         </tr>)}</tbody>
       </table>
     </div>

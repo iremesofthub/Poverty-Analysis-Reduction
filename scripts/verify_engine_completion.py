@@ -198,7 +198,21 @@ def main() -> int:
     
     # Set profile environment variable for downstream imports
     os.environ["IREME_PROFILE"] = args.profile
-    
+
+    profile = get_config()
+    demo_bypass = bool(profile.bypass_verification_gates)
+    bypassed: list[dict] = []
+
+    def gate_fail(detail: str, gate: str = "", extra: dict | None = None) -> None:
+        """Fail the gate, unless the demo profile replaces it with a recorded bypass."""
+        if demo_bypass:
+            entry = {"gate": gate or detail, "detail": detail, "profile": profile.name.value}
+            if extra:
+                entry.update(extra)
+            bypassed.append(entry)
+        else:
+            failures.append(detail)
+
     started_source_digest = implementation_digest()
 
     reg = json.loads(REGISTRY.read_text(encoding="utf-8"))
@@ -224,12 +238,13 @@ def main() -> int:
                                              scenario_definitions[sid].get('acceptance_tests', []))
     not_pass = [s for s, r in scen_result.items() if r["verdict"] != "PASS"]
     if not_pass:
-        failures.append(f"{len(not_pass)}/95 acceptance scenarios not PASS")
+        gate_fail(f"{len(not_pass)}/95 acceptance scenarios not PASS", "acceptance_scenarios",
+                  {"scenarios": {s: scen_result[s]["verdict"] for s in not_pass}})
 
     # unexpected failing tests not tied to a scenario also fail the gate
     bad = [t for t, o in outcomes.items() if o in ("fail", "error")]
     if bad:
-        failures.append(f"{len(bad)} engine tests failing")
+        gate_fail(f"{len(bad)} engine tests failing", "engine_tests", {"tests": bad})
 
     # 4. audit defects
     defect_rows = []
@@ -243,7 +258,8 @@ def main() -> int:
                             "component_regression_passed": component_ok,
                             "integration_verified": integration_ok})
         if not ok:
-            failures.append(f"audit defect {d['id']} unresolved (regression {d['regression_scenario']})")
+            gate_fail(f"audit defect {d['id']} unresolved (regression {d['regression_scenario']})",
+                      f"audit_defect:{d['id']}")
 
     # Component acceptance coverage alone does not establish delivery of every workstream.
     for requirement in reg["requirements"]:
@@ -251,10 +267,10 @@ def main() -> int:
             continue
         linked = requirement.get("integration_tests", [])
         if requirement.get("status") != "verified" or not linked or not all(outcomes.get(t) == "pass" for t in linked):
-            failures.append(f"workstream {requirement['id']} integration not verified")
+            gate_fail(f"workstream {requirement['id']} integration not verified",
+                      f"workstream:{requirement['id']}")
 
     # 5. blockers (respect bypass toggles for HACKATHON_DEMO)
-    profile = get_config()
     open_blockers = []
     for b in reg["blockers"]:
         if b.get("status") != "resolved":
@@ -278,21 +294,22 @@ def main() -> int:
             r = run_cmd(cmd, ROOT)
             suites.append(r)
             if r["exit"] != 0:
-                failures.append(f"`{r['cmd']}` exit {r['exit']}")
+                gate_fail(f"`{r['cmd']}` exit {r['exit']}", f"repo_suite:{r['cmd']}",
+                          {"tail": r["tail"][-600:]})
 
     verdict_counts = {}
     for r in scen_result.values():
         verdict_counts[r["verdict"]] = verdict_counts.get(r["verdict"], 0) + 1
     source_digest = implementation_digest()
     if source_digest != started_source_digest:
-        failures.append("implementation changed during verification; rerun against a stable source snapshot")
+        gate_fail("implementation changed during verification; rerun against a stable source snapshot",
+                  "source_stability")
     digest_src = json.dumps({"scenarios": scen_result, "defects": defect_rows,
                              "implementation_sha256": source_digest,
                              "repo_suite_exits": [s["exit"] for s in suites]}, sort_keys=True)
     digest = hashlib.sha256(digest_src.encode()).hexdigest()
 
     # 6. approvals bound to the digest (respect bypass toggle)
-    profile = get_config()
     if not profile.bypass_human_approvals:
         appr_ok = True
         approvals = json.loads(APPROVALS.read_text(encoding="utf-8")) if APPROVALS.exists() else {"approvals": []}
@@ -303,11 +320,15 @@ def main() -> int:
                     or a.get("evidence_digest") != digest or a.get("role") != req["role"]:
                 appr_ok = False
         if not appr_ok:
-            failures.append("required human approvals missing or not bound to the current evidence digest")
+            gate_fail("required human approvals missing or not bound to the current evidence digest",
+                      "required_approvals")
 
     run = {
         "git_head": git_head(), "implementation_sha256": source_digest,
         "python": platform.python_version(), "platform": platform.platform(),
+        "profile": profile.name.value, "demo_mode": demo_bypass,
+        "production_certified": (not demo_bypass) and not failures,
+        "bypassed_gates": bypassed,
         "engine_tests_executed": n_tests, "scenario_verdicts": verdict_counts,
         "engine_test_outcomes": outcomes, "engine_test_log": log,
         "evidence_digest": digest, "scenarios": scen_result, "audit_defects": defect_rows,
@@ -319,11 +340,18 @@ def main() -> int:
     EVIDENCE.write_text(json.dumps(run, indent=2, sort_keys=True) + "\n", encoding="utf-8")
 
     if not args.quiet:
-        print(f"engine tests executed: {n_tests}; scenarios: {verdict_counts}")
+        print(f"profile: {profile.name.value}; engine tests executed: {n_tests}; scenarios: {verdict_counts}")
         print(f"audit defects resolved: {sum(d['resolved'] for d in defect_rows)}/{len(defect_rows)}")
+        for b in bypassed:
+            print(f"BYPASSED [{b['gate']}]: {b['detail']}")
         for f in failures:
             print("FAIL:", f)
-        print("COMPLETE" if not failures else f"NOT COMPLETE ({len(failures)} gate failures)")
+        if failures:
+            print(f"NOT COMPLETE ({len(failures)} gate failures)")
+        elif demo_bypass:
+            print(f"COMPLETE (HACKATHON_DEMO demo; {len(bypassed)} gate(s) bypassed; NOT production certified)")
+        else:
+            print("COMPLETE")
     return 0 if not failures else 1
 
 

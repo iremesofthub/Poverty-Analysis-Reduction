@@ -26,12 +26,67 @@ MAPPING = {'concept': 'Poverty headcount', 'survey_wave': 'EICV7', 'population':
            'method_version': 'eicv7-poverty-taylor/1'}
 
 
+def sha256_file(path):
+    digest = hashlib.sha256()
+    with Path(path).open('rb') as stream:
+        for chunk in iter(lambda: stream.read(1024 * 1024), b''):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
 def code_snapshot():
     base = Path(__file__).parent
     names = ('science.py', 'survey.py', 'data_eicv7.py', 'r_reference.py', 'catalog.py', 'jobs.py', 'contracts.py')
     sources = {name: (base / name).read_text(encoding='utf-8') for name in names}
     sources['eicv7_survey.R'] = r_reference.SCRIPT.read_text(encoding='utf-8')
     return {'sources': sources, 'sha256': contracts.canonical_hash(sources)}
+
+
+def prepare(catalog, jobs, dataset_id, dataset_version, permission_id, purpose,
+            indicator_id, definition_version, idempotency_key, archive=None):
+    """Validate authority and enqueue an immutable run without opening survey rows."""
+    approved = catalog.authorize(permission_id, dataset_id, dataset_version, purpose)
+    definition = catalog.get('indicator', indicator_id, definition_version)
+    for key, expected in MAPPING.items():
+        if definition.get(key) != expected:
+            raise ValueError('Unsupported or unreviewed EICV7 mapping: ' + key)
+    if definition.get('unit') not in ('fraction', 'percent'):
+        raise ValueError('Poverty headcount requires fraction or percent units')
+    if definition.get('source_dictionary_hash') != approved['dictionary_sha256']:
+        raise ValueError('Indicator dictionary does not match approved dataset dictionary')
+    path = Path(archive) if archive is not None else data_eicv7.zip_path()
+    if sha256_file(path) != approved['sha256']:
+        raise ValueError('Archive does not match authorized dataset revision')
+    snapshot = code_snapshot()
+    environment = {'python': platform.python_version(), 'numpy': np.__version__,
+                   'pandas': pd.__version__, 'scipy': scipy.__version__,
+                   'r_runtime': r_reference.runtime_fingerprint(),
+                   'reference_packages': hashlib.sha256((r_reference.SCRIPT.parent / 'installed-packages.json').read_bytes()).hexdigest()}
+    params = {'tenant': catalog.tenant, 'principal': catalog.principal, 'dataset_id': dataset_id,
+              'dataset_version': dataset_version, 'dataset_sha256': approved['sha256'],
+              'indicator_id': indicator_id, 'definition_version': definition_version,
+              'indicator_sha256': contracts.canonical_hash(definition), 'permission_id': permission_id,
+              'purpose': purpose, 'code_sha256': snapshot['sha256'], 'environment': environment}
+    return jobs.submit('governed-science', params, catalog.tenant + ':' + idempotency_key, VERSION)
+
+
+def resume(catalog, jobs, run_id, tenant, principal, archive=None):
+    """Resume a queued or interrupted run only for its original tenant and actor."""
+    info = jobs.run_info(run_id)
+    params = info['params']
+    if info['kind'] != 'governed-science' or (params.get('tenant'), params.get('principal')) != (tenant, principal):
+        raise PermissionError('Research run is unavailable')
+    idem = jobs.conn().execute('SELECT idem_key FROM runs WHERE run_id=?', (run_id,)).fetchone()
+    if not idem:
+        raise KeyError(run_id)
+    prefix = catalog.tenant + ':'
+    if not idem[0].startswith(prefix):
+        raise PermissionError('Research run idempotency scope is invalid')
+    # execute() applies the tenant prefix itself; remove it before resubmitting so
+    # resume targets the same immutable run instead of creating a second one.
+    raw_idempotency_key = idem[0][len(prefix):]
+    return execute(catalog, jobs, params['dataset_id'], params['dataset_version'], params['permission_id'],
+                   params['purpose'], params['indicator_id'], params['definition_version'], raw_idempotency_key, archive)
 
 
 def execute(catalog, jobs, dataset_id, dataset_version, permission_id, purpose,
@@ -46,7 +101,7 @@ def execute(catalog, jobs, dataset_id, dataset_version, permission_id, purpose,
     if definition.get('source_dictionary_hash') != approved['dictionary_sha256']:
         raise ValueError('Indicator dictionary does not match approved dataset dictionary')
     path = Path(archive) if archive is not None else data_eicv7.zip_path()
-    if hashlib.sha256(path.read_bytes()).hexdigest() != approved['sha256']:
+    if sha256_file(path) != approved['sha256']:
         raise ValueError('Archive does not match authorized dataset revision')
     snapshot = code_snapshot()
     environment = {'python': platform.python_version(), 'numpy': np.__version__,
@@ -62,7 +117,7 @@ def execute(catalog, jobs, dataset_id, dataset_version, permission_id, purpose,
 
     def guard():
         catalog.authorize(permission_id, dataset_id, dataset_version, purpose)
-        if hashlib.sha256(path.read_bytes()).hexdigest() != approved['sha256']:
+        if sha256_file(path) != approved['sha256']:
             raise ValueError('Archive changed during scientific run')
         if code_snapshot()['sha256'] != snapshot['sha256']:
             raise ValueError('Scientific implementation changed during run')

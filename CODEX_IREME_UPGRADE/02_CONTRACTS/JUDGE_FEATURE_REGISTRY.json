@@ -1,0 +1,14 @@
+{
+  "contract": "UPG-12 judge feature registry",
+  "required_primary_ids": ["evidence-check", "support-compare", "resilience", "action-tracking"],
+  "features": [
+    { "id": "evidence-check" },
+    { "id": "support-compare" },
+    { "id": "resilience" },
+    { "id": "action-tracking" },
+    { "id": "vup-rules" },
+    { "id": "referral-followup" },
+    { "id": "quality-checks" },
+    { "id": "model-evaluation" }
+  ]
+}

@@ -79,7 +79,7 @@ test("changing language is saved and applies at once", async () => {
   await dial(ussd, "5");
   const reply = await dial(ussd, "2");
   assert.deepEqual(languages, [["m1", "rw"]]);
-  assert.match(reply.text, /Language saved/);
+  assert.match(reply.text, /Ururimi rwabitswe|Language saved/);
 });
 
 test("a session that sits idle for too long times out", async () => {

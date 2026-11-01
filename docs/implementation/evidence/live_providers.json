@@ -39,7 +39,8 @@
   ]
  },
  "nvidia_json_schema_probe": {
-  "model": "openai/gpt-oss-20b",
-  "ok": true
+  "unavailable": [
+   "fatal:no_supported_model"
+  ]
  }
 }

@@ -17,6 +17,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from acceptance import acceptance  # noqa: E402
 from ireme import api, release_gate, report, reports  # noqa: E402
 from ireme.jobs import JobStore  # noqa: E402
+from ireme.profiles import GOVERNED_PRODUCTION_CONFIG  # noqa: E402
 import test_auth as fixture_auth  # noqa: E402
 
 CHECKS = {k: True for k in release_gate.load_policy()["required"] if k != "authorized_reviewer_signatures"}
@@ -55,7 +56,8 @@ class ReportLifecycle(unittest.TestCase):
         self.store = reports.ReportStore(self.store_path)
         self.addCleanup(self.store.close)
         self.client = TestClient(api.create_app(self.signer.verifier, base / "catalog.db", base / "audit.db",
-                                                report_path=self.store_path))
+                                                report_path=self.store_path,
+                                                profile=GOVERNED_PRODUCTION_CONFIG))
         self.addCleanup(self.client.close)
 
     # ---- helpers -------------------------------------------------------------------------

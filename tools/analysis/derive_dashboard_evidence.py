@@ -79,7 +79,7 @@ result = {
         "extremePoverty": "Population-weighted share below the food poverty line (epov_jan == Extreme Poor).",
         "vupAmongPoor": "Household-weighted share of surveyed poor households with a member answering Yes to VUP participation in any of the five S9D modules. This measures reported participation, not receipt of a payment in the past 12 months or eligibility for all programmes.",
         "vupAmongAllHouseholds": "Household-weighted share of all surveyed households with a member answering Yes to VUP participation in any of the five S9D modules (same definition as vupAmongPoor, all households).",
-        "uncertainty": "District sample counts are shown; design-based confidence intervals were not calculated.",
+        "uncertainty": "District sample counts are shown here. Design-based 95% confidence intervals, standard errors, reliability grades and joint district-versus-Rwanda contrasts are derived separately by derive_dashboard_uncertainty.py from the same EICV7 microdata; they are pending independent scientific review.",
     },
     "national": {
         "poverty": round(weighted_share(households, is_poor, "pop_wt"), 1),

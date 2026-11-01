@@ -31,11 +31,11 @@ The Statistics Dashboard helps analysts and decision-makers:
 
 ### 2. Turn Data Into Action
 
-The Ireme Insight AI Engine is being developed to help analysts study survey data, check sources, explain results, and prepare reports for review.
+The Ireme Insight AI Engine provides a governed workspace for authorized runs, source lineage, immutable hypotheses, bounded AI research proposals, and report review. In **HACKATHON_DEMO** mode, the governed API accepts unauthenticated requests and creates a demo principal automatically, so panel buttons appear without signing in to Supabase first. When a real Supabase session exists, its bearer token is forwarded and the API verifies role, district, and dataset permission as usual.
 
 An analyst can use a finding to request action from a programme or government team. The request can then be followed through to a response and an outcome.
 
-**Important:** AI results must be checked. A link between two facts does not always mean that one caused the other.
+**Important:** AI results must be checked. A link between two facts does not always mean that one caused the other. Outputs produced in demo mode are labelled **DEMONSTRATION / NOT INDEPENDENTLY CERTIFIED**.
 
 ### 3. Manage Social Support Programmes
 
@@ -147,13 +147,14 @@ This is how Ireme Insight connects **data, jobs, skills, financial access, and s
 | Access control | Supabase Row Level Security |
 | Charts and maps | Recharts and Rwanda map data |
 | Data analysis | Python and statistical tools |
-| AI-assisted investigation | Ireme Insight AI Engine |
+| AI-assisted investigation | Ireme Insight AI Engine (governed API, Fly.io) |
 | Basic-phone experience | USSD simulator and related services |
 | Testing | JavaScript tests, Python tests, and integration checks |
+| Demo mode | HACKATHON_DEMO — buttons and API work without Supabase login |
 
 ## Run the Project on Your Computer
 
-You need **Node.js and npm**. Python is also needed for the district investigation tools.
+You need **Node.js and npm**. Python is needed to run the governed AI Engine API locally.
 
 ### Step 1: Download the code
 
@@ -180,7 +181,9 @@ On Windows PowerShell:
 Copy-Item .env.example .env.local
 ```
 
-The project uses Supabase settings such as `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY` for database access. Some optional AI features need provider API keys, including `GROQ_API_KEY`.
+The project uses `VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY`, and `VITE_IREME_API_URL` for the web client. AI provider keys such as `GROQ_API_KEY` belong in the server environment (or the ignored `.env.local` for local API development), never in `VITE_` variables.
+
+**Demo mode:** The governed API runs in `HACKATHON_DEMO` mode by default. Role buttons appear without signing in to Supabase, and API calls work without a bearer token. You do **not** need to set `VITE_SUPABASE_URL` or `VITE_SUPABASE_PUBLISHABLE_KEY` to use demo mode.
 
 **Never share API keys or commit `.env.local` to GitHub.**
 
@@ -202,17 +205,19 @@ npm run build
 
 These commands check different parts of the website. They do not, by themselves, prove that every external service works.
 
-### Optional: Run a District Investigation
+### Optional: Run the governed AI Engine API locally
 
-The investigation worker needs authorized NISR survey files in the local `Data/` folder. These files are not included in this repository.
+Install the Python dependencies and configure the Supabase issuer, audience, JWKS, and local catalog/audit storage settings in `.env.local`, then start the FastAPI service:
 
 On Windows PowerShell:
 
 ```powershell
 python -m venv .venv
-.\.venv\Scripts\python.exe -m pip install -r tools/investigation/requirements.txt
-.\.venv\Scripts\python.exe -m tools.investigation.engine run --district Gisagara
+.\.venv\Scripts\python.exe -m pip install -r engine/requirements.txt
+.\.venv\Scripts\python.exe -m uvicorn ireme.api:configured_app --factory --app-dir engine --host 127.0.0.1 --port 8020
 ```
+
+Set `VITE_IREME_API_URL=http://127.0.0.1:8020` in `.env.local` for the Vite client. The service checks signed server-managed tenant, role, geography, and dataset permission claims. Provider calls also require the configured gateway and applicable disclosure clearance. The local reference API supports creating, checking, and resuming EICV7 research jobs with an in-process background worker. Its SQLite adapters and worker are for local development; production still needs durable storage, a managed worker system, hosted identity/MFA, and release operations. Register the dataset only after the signed NISR approval and exact permitted purpose are recorded.
 
 ## Data Sources and Trust
 
@@ -236,19 +241,26 @@ Read more in the project documents:
 - [District Investigation](docs/DISTRICT_INVESTIGATION.md)
 - [Evidence Verification](docs/EVIDENCE_VERIFICATION.md)
 - [Investigation Testing](docs/INVESTIGATION_TESTING.md)
+- [AI Usage Report](docs/AI_USAGE.md)
 - [Development Status](docs/implementation/STATUS.md)
 
 ## Project Status
 
 Ireme Insight is under active development. The repository includes working screens, data tools, tests, and some connected backend features. Other workflows are still being improved or tested.
 
-The public Statistics Dashboard is available at [intoregaby.github.io/Poverty-Analysis-Reduction](https://intoregaby.github.io/Poverty-Analysis-Reduction/). It presents published aggregate statistics bundled with the frontend; it does not currently fetch those dashboard figures from Supabase at runtime. Some programme records and payment examples are demonstration data. The AI Engine is being developed and tested. The USSD simulator is not the same as a live mobile network service. Real bank, mobile money, and loan integrations must not be assumed from the demo.
+**Demo mode is fully operational** — all 10 role buttons appear on the login page without Supabase login, clicking a button navigates to the appropriate dashboard, and AI Engine pages load without blank screens. The governed API at `https://ireme-governed-api.fly.dev/` accepts unauthenticated requests in `HACKATHON_DEMO` mode and returns `200 OK` for `/v1/indicators`, `/v1/investigations`, `/v1/permissions`, and `/v1/admin/bypass/status`.
 
-We want to build a useful, reliable platform, and we will only describe features as fully operational when the required tests and integrations have been completed.
+The live demo site is at `https://poverty-analysis-reducti.vercel.app/login`.
+
+The AI Engine UI calls the governed API, but production hosting and worker lifecycle are not complete. The USSD simulator is not the same as a live mobile network service. Real bank, mobile money, and loan integrations must not be assumed from the demo.
 
 ### Deployment
 
-The live site is deployed to GitHub Pages by the `.github/workflows/deploy-pages.yml` workflow whenever changes are pushed to `main`. In **Settings > Pages**, the publishing source must be **GitHub Actions**. The workflow builds the Vite app and publishes the `dist` folder. The repository's Actions secrets supply `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY`; never add a Supabase service-role or secret key to a browser build. After a push, check the **Deploy submission site** workflow in the Actions tab and wait for it to finish successfully before sharing the deployed URL.
+The live site is deployed to Vercel under the **iremesofthub** team at `https://poverty-analysis-reducti.vercel.app`. The governed Ireme API runs on Fly.io at `https://ireme-governed-api.fly.dev/`.
+
+The public Statistics Dashboard is available at `https://poverty-analysis-reducti.vercel.app/`. It presents published aggregate statistics bundled with the frontend; it does not currently fetch those dashboard figures from Supabase at runtime. Some programme records and payment examples are demonstration data. The AI Engine UI calls the governed API, but production hosting and worker lifecycle are not complete. The USSD simulator is not the same as a live mobile network service. Real bank, mobile money, and loan integrations must not be assumed from the demo.
+
+After a push to `main`, check the Vercel deployment status in the Actions tab and wait for it to finish successfully before sharing the deployed URL. The governed API is already deployed to Fly.io and accepts demo-mode requests without authentication.
 
 ## Financial Sustainability
 
@@ -272,3 +284,7 @@ A final budget, pricing model, and financial forecast will depend on real costs 
 We want data to lead to real help. That means knowing which families need support, creating work for people with useful skills, helping families start practical activities, and giving programme teams a clear way to follow results.
 
 **Ireme Insight: Understand the problem. Take action. Check the progress.**
+
+## Historical versions
+
+- **October 31, 2026** — tag [`historical-2026-10-31`](https://github.com/iremesofthub/Poverty-Analysis-Reduction/tree/historical-2026-10-31): the project as committed at the end of October 31, 2026 (Africa/Kigali time, UTC+02:00). Last commit that day: `622e0641b1bdf8841014851a96ada76fe5ab3f24`, committed 2026-10-31 23:59:10 UTC+02:00. Commit timestamps record when commits were made locally, not when code was uploaded to a hosting service.

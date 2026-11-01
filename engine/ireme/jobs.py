@@ -16,6 +16,7 @@ from pathlib import Path
 from typing import Callable
 
 from .gateway import redact
+from .sqlite_support import enable_wal
 
 SCHEMA_VERSION = 2
 MIGRATIONS = {
@@ -53,6 +54,7 @@ class JobStore:
         self.clock = clock
         self._local = threading.local()
         self._all_conns = []
+        self._conn_lock = threading.Lock()
         self._audit_lock = threading.Lock()
         try:
             self.migrate()
@@ -61,14 +63,24 @@ class JobStore:
             raise
 
     # ---- connection / migrations ---------------------------------------------------------------------
+    def _connect(self) -> sqlite3.Connection:
+        """Open a connection with the store's durability pragmas applied."""
+        c = sqlite3.connect(self.path, timeout=30, isolation_level=None, check_same_thread=False)
+        try:
+            enable_wal(c)
+            c.execute("PRAGMA synchronous=FULL")
+        except Exception:
+            c.close()
+            raise
+        return c
+
     def conn(self) -> sqlite3.Connection:
         c = getattr(self._local, "c", None)
         if c is None:
-            c = sqlite3.connect(self.path, timeout=30, isolation_level=None, check_same_thread=False)
-            c.execute("PRAGMA journal_mode=WAL")
-            c.execute("PRAGMA synchronous=FULL")
+            c = self._connect()
             self._local.c = c
-            self._all_conns.append(c)
+            with self._conn_lock:
+                self._all_conns.append(c)
         return c
 
     def close(self):
@@ -150,6 +162,18 @@ class JobStore:
             rid = c.execute("SELECT run_id FROM runs WHERE idem_key=?", (idem_key,)).fetchone()[0]
         return rid
 
+    def list_runs(self, limit: int = 100) -> list[dict]:
+        """Newest runs first. Callers must filter ownership before exposing anything.
+
+        ``params`` is included for ownership checks only; the HTTP layer never
+        returns it verbatim.
+        """
+        rows = self.conn().execute(
+            "SELECT run_id,kind,params,status,created,worker_version FROM runs ORDER BY rowid DESC LIMIT ?",
+            (max(1, min(int(limit), 500)),)).fetchall()
+        return [{"run_id": r[0], "kind": r[1], "params": json.loads(r[2]), "status": r[3],
+                 "created": r[4], "worker_version": r[5]} for r in rows]
+
     def run_info(self, rid: str) -> dict:
         r = self.conn().execute("SELECT run_id,kind,params,worker_version,status FROM runs WHERE run_id=?", (rid,)).fetchone()
         return {"run_id": r[0], "kind": r[1], "params": json.loads(r[2]), "worker_version": r[3], "status": r[4]}
@@ -157,6 +181,21 @@ class JobStore:
     def stage_rows(self, rid: str) -> dict:
         return {r[0]: {"status": r[1], "input_hash": r[2], "output_hash": r[3], "worker_version": r[4]} for r in
                 self.conn().execute("SELECT name,status,input_hash,output_hash,worker_version FROM stages WHERE run_id=?", (rid,))}
+
+    def public_status(self, rid: str) -> dict | None:
+        """Return workflow state only; never expose stored input parameters or stage outputs."""
+        row = self.conn().execute("SELECT run_id,status,created FROM runs WHERE run_id=?", (rid,)).fetchone()
+        if not row:
+            return None
+        stages = self.conn().execute("SELECT name,status FROM stages WHERE run_id=? ORDER BY rowid", (rid,)).fetchall()
+        return {"run_id": row[0], "status": row[1], "created": row[2],
+                "stages": [{"stage_id": name, "status": status} for name, status in stages]}
+
+    def fail_before_stage(self, rid: str, error_type: str) -> None:
+        """Mark preparation failures without persisting exception text or source data."""
+        safe_type = error_type if error_type.isascii() and error_type.isalnum() else "WorkerError"
+        self.conn().execute("UPDATE runs SET status='failed' WHERE run_id=? AND status!='complete'", (rid,))
+        self.log("worker", "run.failed_before_stage", {"run_id": rid, "error_type": safe_type[:64]})
 
     def execute(self, rid: str, stages: list[tuple[str, Callable[[dict, dict], dict], Callable[[dict], dict] | None]],
                 ) -> dict:
@@ -186,11 +225,17 @@ class JobStore:
             cascade = True       # anything downstream of a re-run stage is recomputed
             try:
                 out = fn(params, dict(up))
-            except Exception as e:
+            except Exception as exc:
                 c.execute("INSERT OR REPLACE INTO stages(run_id,name,input_hash,output,output_hash,status,worker_version,finished)"
                           " VALUES (?,?,?,?,?,?,?,?)", (rid, name, in_hash, None, None, "failed", info["worker_version"], self.clock()))
                 c.execute("UPDATE runs SET status='failed' WHERE run_id=?", (rid,))
-                self.log("worker", "stage.failed", {"run_id": rid, "stage": name, "error": f"{type(e).__name__}: {e}"})
+                # Exception messages can accidentally contain source values or paths.
+                # Keep only a bounded type label in the audit chain.
+                error_type = type(exc).__name__
+                if not error_type.isascii() or not error_type.isalnum():
+                    error_type = "WorkerError"
+                self.log("worker", "stage.failed", {"run_id": rid, "stage": name,
+                                                     "error_type": error_type[:64]})
                 raise
             c.execute("BEGIN IMMEDIATE")           # stage result + status commit atomically
             c.execute("INSERT OR REPLACE INTO stages(run_id,name,input_hash,output,output_hash,status,worker_version,finished)"

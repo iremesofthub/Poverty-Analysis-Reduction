@@ -10,15 +10,15 @@ export default function AnalystTopbar({ province, onProvinceChange, onExport, ti
   const { t } = useTranslation();
   return (
     <div className="sticky top-0 z-30 border-b border-hairline bg-white/85 backdrop-blur">
-      <div className="flex h-14 items-center gap-3 px-4 sm:px-6 lg:px-8">
-        <h1 data-tour="page-title" className="text-[15px] font-semibold tracking-tight text-ink">{title}</h1>
+      <div className="flex h-14 items-center gap-2 px-4 sm:gap-3 sm:px-6 lg:px-8">
+        <h1 data-tour="page-title" className="min-w-0 truncate text-[15px] font-semibold tracking-tight text-ink">{title}</h1>
         <InfoTip label={title} large>{t(introKey(introPath))}</InfoTip>
         <span className="hidden items-center gap-1.5 rounded-full border border-hairline px-2 py-[3px] text-[11px] text-sub sm:inline-flex">
           <span className="h-1.5 w-1.5 rounded-full bg-pos" />
           Latest data: 2023/24
         </span>
 
-        <div className="ml-auto flex items-center gap-2">
+        <div className="ml-auto flex shrink-0 items-center gap-2">
           <Select value={province} onValueChange={onProvinceChange}>
             <SelectTrigger data-tour="analysis-filter" className="h-8 w-[132px] rounded-md border-hairline text-[12px] text-ink sm:w-[150px]">
               <SelectValue />

@@ -2,6 +2,7 @@ import React, { useMemo, useState } from "react";
 import { Eye, HeartPulse, Inbox, Users, UsersRound } from "lucide-react";
 import SidePanel from "@/components/investigation/SidePanel";
 import { useDemoAuth } from "@/lib/DemoAuthContext";
+import { useAuth } from "@/lib/AuthContext";
 import { leaderScope, useCooperatives } from "@/lib/cooperatives";
 import { ago } from "@/components/requests/bits";
 import { useTranslation } from "react-i18next";
@@ -20,7 +21,10 @@ const HEALTH_STYLE = { "Going well": "border-[#ABEFC6] bg-[#ECFDF3] text-[#06764
 const JOIN_STYLE = { Open: "text-[#067647]", Full: "text-[#B54708]", Closed: "text-sub" };
 const short = (name) => ({ "VUP Direct Support": "VUP", "Girinka Munyarwanda": "Girinka", "Expanded Public Works": "Public Works", "Nsymibondo y'Icyaro": "Nsymibondo" }[name] || name);
 
-export const HealthChip = ({ health }) => <span className={`inline-flex shrink-0 rounded-full border px-2 py-0.5 text-[10.5px] font-medium ${HEALTH_STYLE[health]}`}>{health}</span>;
+export const HealthChip = ({ health }) => {
+  const { t } = useTranslation();
+  return <span className={`inline-flex shrink-0 rounded-full border px-2 py-0.5 text-[10.5px] font-medium ${HEALTH_STYLE[health]}`}>{t(`coopHealth.${health}`, { defaultValue: health })}</span>;
+};
 
 function Kpi({ icon: Icon, label, value, foot, warn }) {
   return <div className="rounded-xl border border-hairline bg-white px-4 py-3.5"><div className="flex items-center gap-2 text-sub"><Icon className="h-4 w-4" strokeWidth={1.9} /><span className="text-[11.5px] font-medium">{label}</span></div><p className={`mt-1.5 text-[22px] font-semibold leading-none tracking-tight tabular-nums ${warn ? "text-[#B54708]" : "text-ink"}`}>{value}</p><p className="mt-1.5 text-[11px] text-[#8A94A6]">{foot}</p></div>;
@@ -51,7 +55,8 @@ function Detail({ coop, store, onClose }) {
 
 export default function GovCooperatives() {
   const { demoUser } = useDemoAuth();
-  const scope = leaderScope(demoUser);
+  const { profile } = useAuth();
+  const scope = leaderScope(demoUser, profile);
   const store = useCooperatives();
   const allDistricts = useMemo(() => [...new Set(store.coops.map((coop) => coop.district))].sort(), [store.coops]);
   const [districtChoice, setDistrictChoice] = useState("Nyaruguru");

@@ -55,7 +55,7 @@ export default function MoversCard({ rows }) {
         </button>
       )}
       <p className="mt-3 border-t border-hairline pt-2 text-[10.5px] leading-relaxed text-[#8A94A6]">
-        <a href={DASHBOARD_SOURCES.change} target="_blank" rel="noreferrer" className="underline underline-offset-2">Source: NISR EICV7 Poverty Profile, Annex B</a> · people below the poverty line. Earlier rates are modelled on the new method. Changes use NISR's published percentage points and may differ by 0.1 from the displayed rounded rates. District confidence intervals are not shown; NISR finds statistically clear reductions in 17 of 30 districts.
+        <a href={DASHBOARD_SOURCES.change} target="_blank" rel="noreferrer" className="underline underline-offset-2">Source: NISR EICV7 Poverty Profile, Annex B</a> · people below the poverty line. Earlier rates are modelled on the new method. Changes use NISR's published percentage points and may differ by 0.1 from the displayed rounded rates. No confidence interval is shown for a change, because that would need the two survey periods analysed together and has not been calculated here; NISR finds statistically clear reductions in 17 of 30 districts. The 2023/24 level alone does carry a design-based interval, shown in the poverty charts.
       </p>
     </Card>
   );

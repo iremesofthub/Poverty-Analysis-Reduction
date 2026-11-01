@@ -50,10 +50,18 @@ def evaluate(checks: dict, blocking_flags: set, signatures: list, author_id: str
         if checks.get(name) is not True:
             reasons.append(f"required check not passed: {name}")
     # Use demo roles for hackathon demo profile
-    required_roles = DEMO_REQUIRED_ROLES if (profile and profile.name.value == "HACKATHON_DEMO") else REQUIRED_ROLES
+    bypass = bool(profile and profile.bypass_human_approvals)
+    if bypass:
+        # Demo freedom: the analyst's own signature is sufficient; other required
+        # checks still apply so no unsafe report can be published silently.
+        required_roles = ()
+    elif profile and profile.name.value == "HACKATHON_DEMO":
+        required_roles = DEMO_REQUIRED_ROLES
+    else:
+        required_roles = REQUIRED_ROLES
     roles = {s["role"] for s in signatures if s.get("reviewer_id") and s["reviewer_id"] != author_id}
     missing = [r for r in required_roles if r not in roles]
-    if any(s.get("reviewer_id") == author_id for s in signatures):
+    if not bypass and any(s.get("reviewer_id") == author_id for s in signatures):
         reasons.append("author cannot sign their own report")
     if missing:
         reasons.append("missing reviewer signatures: " + ", ".join(missing))

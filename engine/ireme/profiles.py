@@ -23,7 +23,8 @@ The profiles are selected via environment variable IREME_PROFILE at startup.
 """
 from __future__ import annotations
 import os
-from dataclasses import dataclass, field
+import threading
+from dataclasses import dataclass, field, replace
 from enum import Enum
 from typing import Callable, Optional
 
@@ -77,6 +78,12 @@ class ProfileConfig:
     bypass_human_approvals: bool = False  # Bypass BLK-APPROVALS requirement
     bypass_production_infra: bool = False  # Bypass BLK-INFRA requirement
 
+    # Verification gate bypass (HACKATHON_DEMO only): the completion gate records the
+    # unmet production gates in a bypass ledger instead of blocking the demo. The
+    # evidence file is always marked as non-production, so this can never be mistaken
+    # for GOVERNED_PRODUCTION certification.
+    bypass_verification_gates: bool = False
+
 
 # =============================================================================
 # Profile definitions
@@ -113,6 +120,7 @@ HACKATHON_DEMO_CONFIG = ProfileConfig(
     bypass_independent_statistician=True,  # Bypass BLK-R for demo testing
     bypass_human_approvals=True,  # Bypass BLK-APPROVALS for demo testing
     bypass_production_infra=True,  # Bypass BLK-INFRA for demo testing
+    bypass_verification_gates=True,  # Report unmet gates as a recorded bypass, not a block
 
     # Infrastructure - allow local dev
     require_production_infrastructure=False,
@@ -175,6 +183,7 @@ GOVERNED_PRODUCTION_CONFIG = ProfileConfig(
     bypass_independent_statistician=False,
     bypass_human_approvals=False,
     bypass_production_infra=False,
+    bypass_verification_gates=False,
 )
 
 # Registry of all profiles
@@ -193,11 +202,56 @@ def get_profile() -> Profile:
         raise ValueError(f"Invalid IREME_PROFILE: {env}. Valid: {[p.value for p in Profile]}")
 
 
+# Runtime bypass toggles (HACKATHON_DEMO only). The admin panel can flip these while
+# the demo runs; they are never persisted and never available in production.
+_BYPASS_FIELDS = (
+    "bypass_independent_statistician",
+    "bypass_human_approvals",
+    "bypass_production_infra",
+    "bypass_verification_gates",
+)
+_bypass_lock = threading.Lock()
+_bypass_overrides: dict[str, bool] = {}
+
+
+def _apply_overrides(config: ProfileConfig) -> ProfileConfig:
+    """Apply live admin toggles to the demo profile; production stays immutable."""
+    if config.name != Profile.HACKATHON_DEMO:
+        return config
+    with _bypass_lock:
+        active = {k: v for k, v in _bypass_overrides.items() if k in _BYPASS_FIELDS}
+    return replace(config, **active) if active else config
+
+
 def get_config(profile: Optional[Profile] = None) -> ProfileConfig:
     """Get configuration for the active or specified profile."""
     if profile is None:
         profile = get_profile()
-    return PROFILES[profile]
+    return _apply_overrides(PROFILES[profile])
+
+
+def get_bypass_status(profile: Optional[ProfileConfig] = None) -> dict:
+    """Current state of the demo bypass toggles."""
+    config = _apply_overrides(PROFILES[get_profile() if profile is None else profile.name])
+    return {name: bool(getattr(config, name)) for name in _BYPASS_FIELDS}
+
+
+def set_bypass(name: str, enabled: bool, profile: Optional[ProfileConfig] = None) -> dict:
+    """Flip one demo bypass toggle. Refused outside HACKATHON_DEMO."""
+    base = PROFILES[get_profile() if profile is None else profile.name]
+    if base.name != Profile.HACKATHON_DEMO:
+        return {"success": False, "error": "Bypass toggles are only available in HACKATHON_DEMO"}
+    if name not in _BYPASS_FIELDS:
+        return {"success": False, "error": f"Unknown bypass toggle: {name}"}
+    with _bypass_lock:
+        _bypass_overrides[name] = bool(enabled)
+    return {"success": True, "bypass": get_bypass_status(profile)}
+
+
+def reset_bypass_overrides() -> None:
+    """Clear live toggles (tests and demo resets)."""
+    with _bypass_lock:
+        _bypass_overrides.clear()
 
 
 # =============================================================================

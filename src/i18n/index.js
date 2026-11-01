@@ -1,5 +1,6 @@
 import en from "./en.json";
 import rw from "./rw.json";
+import tourRw from "./tourRw";
 import { createI18n, DEFAULT_LANGUAGE, isSupported, LANGUAGES } from "./core";
 
 export { LANGUAGES, DEFAULT_LANGUAGE, isSupported };
@@ -13,7 +14,8 @@ export function readSavedLanguage() {
   return DEFAULT_LANGUAGE;
 }
 
-const instance = createI18n({ en, rw }, readSavedLanguage());
+const rwWithTour = { ...rw, tour: { ...rw.tour, steps: tourRw } };
+const instance = createI18n({ en, rw: rwWithTour }, readSavedLanguage());
 
 // Switches every mounted component straight away, with no reload.
 export function setLanguage(code) {

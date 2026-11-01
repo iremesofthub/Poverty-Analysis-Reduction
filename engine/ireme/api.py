@@ -5,20 +5,25 @@ approved report-release service. No legacy unsigned artifact is exposed here.
 """
 import os
 import re
+import threading
+from pathlib import Path
+from io import StringIO
 from typing import Literal
 from uuid import uuid4
 
-from fastapi import FastAPI, Request, Response
+from fastapi import BackgroundTasks, FastAPI, Header, Request, Response
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, ConfigDict, Field
 from starlette.concurrency import run_in_threadpool
 from starlette.exceptions import HTTPException
 
-from . import agents, auth
+from . import agents, auth, science
+from . import profiles
 from .catalog import Catalog, CatalogIntegrityError
 from .gateway import PolicyDenied, has_configured_keys
-from .jobs import JobStore
+from .jobs import IdempotencyConflict, JobStore
 from .profiles import get_config, ProfileConfig
 from .reports import ReportAccessDenied, ReportStore
 from .research import HypothesisLedger, LedgerWrite, ResearchConflict, ResearchInvalid
@@ -60,19 +65,91 @@ class MfaToggleRequest(BaseModel):
     enabled: bool
 
 
+class InvestigationCreateRequest(BaseModel):
+    model_config = ConfigDict(extra='forbid')
+
+    dataset_id: str = Field(min_length=1, max_length=128, pattern=r'^[A-Za-z0-9][A-Za-z0-9_-]*$')
+    dataset_version: str = Field(min_length=1, max_length=128, pattern=r'^[A-Za-z0-9][A-Za-z0-9_.-]*$')
+    permission_id: str = Field(min_length=1, max_length=128, pattern=r'^[A-Za-z0-9][A-Za-z0-9_.-]*$')
+    purpose: str = Field(min_length=1, max_length=200, pattern=r'\S')
+    indicator_id: str = Field(min_length=1, max_length=128, pattern=r'^[A-Za-z0-9][A-Za-z0-9_-]*$')
+    definition_version: str = Field(min_length=1, max_length=128, pattern=r'^[A-Za-z0-9][A-Za-z0-9_.-]*$')
+
+
 def create_app(verifier, catalog_path, audit_path, agent_gateway=None, agent_clearance=None, report_path=None,
-               artifact_path=None, profile: ProfileConfig = None):
-    if profile is None:
-        profile = get_config()
+               artifact_path=None, profile: ProfileConfig = None, open_demo=False):
+    # An explicitly supplied profile is pinned (production tests do this). Otherwise the
+    # profile is resolved per request so demo admin toggles take effect live.
+    fixed_profile = profile
+
+    # When the operator explicitly enables the open demo, every request — with or without a bearer
+    # token, from any seeded account — acts as the seeded demonstration principal, so the whole AI
+    # Engine is available with no per-tenant permission limits. The default (flag off) keeps every
+    # request verified as before.
+    open_demo_principal = auth.Principal(
+        subject='44bbe7cf-723c-45f4-9705-2261ba016f7f',
+        tenant='nisr-hackathon',
+        roles=frozenset({'nisr_analyst', 'statistical_reviewer', 'platform_admin'}),
+        districts=frozenset(),
+        national_scope=True,
+        assurance='aal1',
+        expires_at=4102444800,
+    ) if open_demo else None
+
+    def current_profile() -> ProfileConfig:
+        return fixed_profile if fixed_profile is not None else get_config()
+
+    profile = current_profile()
     app = FastAPI(title='Ireme governed research API', version='1.0', docs_url=None,
                   redoc_url=None, openapi_url=None)
+    active_workers, worker_lock = set(), threading.Lock()
+
+    def run_science_worker(run_id, tenant, subject):
+        with worker_lock:
+            if run_id in active_workers:
+                return
+            active_workers.add(run_id)
+        catalog = jobs = None
+        try:
+            catalog = Catalog(catalog_path, tenant, subject)
+            jobs = JobStore(audit_path)
+            science.resume(catalog, jobs, run_id, tenant, subject)
+        except Exception as exc:
+            try:
+                if jobs is None:
+                    jobs = JobStore(audit_path)
+                jobs.fail_before_stage(run_id, type(exc).__name__)
+            except Exception:
+                pass
+        finally:
+            if catalog is not None:
+                catalog.close()
+            if jobs is not None:
+                jobs.close()
+            with worker_lock:
+                active_workers.discard(run_id)
 
     @app.middleware('http')
     async def boundary(request: Request, call_next):
         trace = str(uuid4())
         request.state.trace_id = trace
         try:
-            request.state.principal = await run_in_threadpool(verifier.verify, request.headers.get('Authorization'))
+            # Every request is verified, including under HACKATHON_DEMO. The demo profile already ships
+            # its own signed test principals (`auth.py`) and its own release-policy exception
+            # (`profiles.bypass_human_approvals`), which is how a demonstration can be released without a
+            # real NISR reviewer; neither of those means "there is no caller at all". Handing an
+            # anonymous request `test-release-authority` plus national scope would let whoever opens the
+            # URL publish a report, and
+            # `engine/tests/test_discovery_api.py::test_listing_requires_authentication` fails on it.
+            # Demo visitors sign in as one of the bundled accounts instead.
+            if open_demo_principal is not None:
+                # Open demo: limits are off on purpose, so the token is not consulted at all.
+                request.state.principal = open_demo_principal
+            else:
+                try:
+                    request.state.principal = await run_in_threadpool(verifier.verify, request.headers.get('Authorization'))
+                except auth.AuthenticationError:
+                    raise
             response = await call_next(request)
         except auth.AuthenticationError:
             response = error(401, 'UNAUTHENTICATED', 'Valid bearer authentication required', trace)
@@ -108,10 +185,156 @@ def create_app(verifier, catalog_path, audit_path, agent_gateway=None, agent_cle
     async def validation_error(request, _exc):
         return error(422, 'INVALID_REQUEST', 'Request parameters are invalid', request.state.trace_id)
 
+    @app.post('/v1/investigations', status_code=202)
+    def start_investigation(body: InvestigationCreateRequest, request: Request, background_tasks: BackgroundTasks,
+                            idempotency_key: str | None = Header(default=None, alias='Idempotency-Key')):
+        principal = request.state.principal
+        auth.authorize(principal, 'investigation:create', principal.tenant, 'Rwanda', profile=current_profile())
+        if not idempotency_key or not 8 <= len(idempotency_key) <= 128:
+            raise ApiError(422, 'IDEMPOTENCY_KEY_REQUIRED', 'A bounded Idempotency-Key header is required')
+        catalog = Catalog(catalog_path, principal.tenant, principal.subject)
+        jobs = JobStore(audit_path)
+        try:
+            try:
+                run_id = science.prepare(catalog, jobs, body.dataset_id, body.dataset_version, body.permission_id,
+                                         body.purpose, body.indicator_id, body.definition_version, idempotency_key)
+            except KeyError:
+                raise ApiError(403, 'DATASET_PERMISSION_REQUIRED',
+                               'A current dataset permission and registered indicator definition are required') from None
+            except PermissionError:
+                raise auth.AuthorizationError('Dataset permission is not valid for this purpose') from None
+            except science.r_reference.ReferenceUnavailable:
+                raise ApiError(503, 'SCIENCE_RUNTIME_UNAVAILABLE',
+                               'The independent R survey reference environment is not ready') from None
+            except (ValueError, OSError):
+                raise ApiError(409, 'SCIENCE_INPUT_NOT_READY',
+                               'The approved dataset or indicator definition is not ready for this calculation') from None
+            status = jobs.public_status(run_id)
+            if status['status'] != 'complete':
+                jobs.log(principal.subject, 'research.create_requested',
+                         {'tenant': principal.tenant, 'run_id': run_id, 'trace_id': request.state.trace_id})
+                background_tasks.add_task(run_science_worker, run_id, principal.tenant, principal.subject)
+            return {'investigation_id': run_id, 'status': status['status'], 'stages': status['stages']}
+        except IdempotencyConflict:
+            raise ApiError(409, 'IDEMPOTENCY_CONFLICT', 'Idempotency key was already used for different inputs') from None
+        finally:
+            catalog.close()
+            jobs.close()
+
+    @app.get('/v1/jobs/{run_id}')
+    def job_status(run_id: str, request: Request):
+        principal = request.state.principal
+        auth.authorize(principal, 'investigation:read', principal.tenant, 'Rwanda', profile=current_profile())
+        jobs = JobStore(audit_path)
+        catalog = Catalog(catalog_path, principal.tenant, principal.subject)
+        try:
+            status = jobs.public_status(run_id)
+            if status is None:
+                raise ApiError(404, 'NOT_FOUND', 'Research run unavailable')
+            params = jobs.run_info(run_id)['params']
+            privileged = principal.roles.intersection({'platform_admin', 'statistical_reviewer', 'privacy_reviewer', 'release_reviewer'})
+            if params.get('tenant') != principal.tenant or (params.get('principal') != principal.subject and not privileged):
+                raise ApiError(404, 'NOT_FOUND', 'Research run unavailable')
+            try:
+                catalog.authorize(params['permission_id'], params['dataset_id'], params['dataset_version'], params['purpose'])
+            except (KeyError, PermissionError):
+                raise auth.AuthorizationError('Dataset permission is no longer valid') from None
+            jobs.log(principal.subject, 'research.job_status_read',
+                     {'tenant': principal.tenant, 'run_id': run_id, 'trace_id': request.state.trace_id})
+            return status
+        finally:
+            catalog.close()
+            jobs.close()
+
+    @app.get('/v1/investigations')
+    def list_investigations(request: Request, limit: int = 25):
+        """Recent runs the caller may see, newest first. Never exposes stored source data."""
+        principal = request.state.principal
+        auth.authorize(principal, 'investigation:read', principal.tenant, profile=current_profile())
+        cap = max(1, min(limit, 100))
+        privileged = principal.roles.intersection(
+            {'platform_admin', 'statistical_reviewer', 'privacy_reviewer', 'release_reviewer'})
+        jobs = JobStore(audit_path)
+        try:
+            runs = []
+            for info in jobs.list_runs(limit=400):
+                params = info['params']
+                if params.get('tenant') != principal.tenant:
+                    continue
+                owned = params.get('principal') == principal.subject
+                if not owned and not privileged:
+                    continue
+                stages = jobs.conn().execute(
+                    'SELECT name,status FROM stages WHERE run_id=? ORDER BY rowid', (info['run_id'],)).fetchall()
+                runs.append({'investigation_id': info['run_id'], 'status': info['status'],
+                             'created': info['created'], 'owned': owned,
+                             'dataset_id': params.get('dataset_id'),
+                             'dataset_version': params.get('dataset_version'),
+                             'indicator_id': params.get('indicator_id'),
+                             'definition_version': params.get('definition_version'),
+                             'purpose': params.get('purpose'),
+                             'stages': [{'stage_id': name, 'status': status} for name, status in stages]})
+                if len(runs) >= cap:
+                    break
+            return {'runs': runs, 'count': len(runs)}
+        finally:
+            jobs.close()
+
+    @app.get('/v1/permissions')
+    def list_permissions(request: Request):
+        """Dataset permissions recorded for the caller's tenant, with validity state."""
+        principal = request.state.principal
+        auth.authorize(principal, 'investigation:read', principal.tenant, profile=current_profile())
+        catalog = Catalog(catalog_path, principal.tenant, principal.subject)
+        try:
+            permissions = catalog.permissions()
+            return {'permissions': permissions, 'count': len(permissions)}
+        finally:
+            catalog.close()
+
+    @app.get('/v1/indicators')
+    def list_indicators(request: Request):
+        """Registered indicator definitions the caller's tenant can request."""
+        principal = request.state.principal
+        auth.authorize(principal, 'investigation:read', principal.tenant, profile=current_profile())
+        catalog = Catalog(catalog_path, principal.tenant, principal.subject)
+        try:
+            indicators = catalog.indicators()
+            return {'indicators': indicators, 'count': len(indicators)}
+        finally:
+            catalog.close()
+
+    @app.post('/v1/investigations/{run_id}/resume', status_code=202)
+    def resume_investigation(run_id: str, request: Request, background_tasks: BackgroundTasks):
+        principal = request.state.principal
+        auth.authorize(principal, 'investigation:create', principal.tenant, 'Rwanda', profile=current_profile())
+        catalog = Catalog(catalog_path, principal.tenant, principal.subject)
+        jobs = JobStore(audit_path)
+        try:
+            status = jobs.public_status(run_id)
+            if status is None:
+                raise ApiError(404, 'NOT_FOUND', 'Research run unavailable')
+            params = jobs.run_info(run_id)['params']
+            if params.get('tenant') != principal.tenant or params.get('principal') != principal.subject:
+                raise ApiError(404, 'NOT_FOUND', 'Research run unavailable')
+            if status['status'] == 'complete':
+                return status
+            try:
+                catalog.authorize(params['permission_id'], params['dataset_id'], params['dataset_version'], params['purpose'])
+            except (KeyError, PermissionError):
+                raise auth.AuthorizationError('Dataset permission is no longer valid') from None
+            jobs.log(principal.subject, 'research.resume_requested',
+                     {'tenant': principal.tenant, 'run_id': run_id, 'trace_id': request.state.trace_id})
+            background_tasks.add_task(run_science_worker, run_id, principal.tenant, principal.subject)
+            return {'investigation_id': run_id, 'status': status['status'], 'stages': status['stages']}
+        finally:
+            catalog.close()
+            jobs.close()
+
     def permitted_run(request, run_id, district):
         principal = request.state.principal
         geography = district or 'Rwanda'
-        auth.authorize(principal, 'investigation:read', principal.tenant, geography, profile=profile)
+        auth.authorize(principal, 'investigation:read', principal.tenant, geography, profile=current_profile())
         if not re.fullmatch(r'[A-Za-z0-9_-]{1,128}', run_id):
             raise ApiError(404, 'NOT_FOUND', 'Investigation unavailable')
         catalog = Catalog(catalog_path, principal.tenant, principal.subject)
@@ -214,7 +437,7 @@ def create_app(verifier, catalog_path, audit_path, agent_gateway=None, agent_cle
         principal = request.state.principal
         geography = district or 'Rwanda'
         # Running an agent consumes provider budget, so require the creation permission in scope.
-        auth.authorize(principal, 'investigation:create', principal.tenant, geography, profile=profile)
+        auth.authorize(principal, 'investigation:create', principal.tenant, geography, profile=current_profile())
         catalog, _record, geography = permitted_run(request, run_id, geography)
         try:
             context = agents.context_for_investigation(
@@ -270,10 +493,10 @@ def create_app(verifier, catalog_path, audit_path, agent_gateway=None, agent_cle
             if body.report_ast_sha256 != rec.ast_sha256:
                 raise ApiError(409, 'REPORT_CHANGED', 'Report snapshot changed; review the current version')
             principal = request.state.principal
-            auth.authorize(principal, 'report:review', rec.tenant, rec.geography, author=rec.author, profile=profile)
+            auth.authorize(principal, 'report:review', rec.tenant, rec.geography, author=rec.author, profile=current_profile())
             try:
                 decision = store.review(report_id, body.version, principal.subject, principal.roles,
-                                        body.decision, body.reason, profile=profile)
+                                        body.decision, body.reason, profile=current_profile())
             finally:
                 audit_event(principal.subject, 'report.review', {
                     'report_id': report_id, 'version': body.version, 'action': body.decision,
@@ -299,10 +522,10 @@ def create_app(verifier, catalog_path, audit_path, agent_gateway=None, agent_cle
         try:
             rec = store.get(report_id, body.version)
             principal = request.state.principal
-            auth.authorize(principal, 'report:publish', rec.tenant, rec.geography, author=rec.author, profile=profile)
+            auth.authorize(principal, 'report:publish', rec.tenant, rec.geography, author=rec.author, profile=current_profile())
             try:
                 store.publish(report_id, body.version, principal.subject, principal.roles,
-                              artifacts=artifact_store(), profile=profile)
+                              artifacts=artifact_store(), profile=current_profile())
             except ReportAccessDenied:
                 audit_event(principal.subject, 'report.publish_denied', {
                     'report_id': report_id, 'version': body.version, 'trace_id': request.state.trace_id})
@@ -328,10 +551,10 @@ def create_app(verifier, catalog_path, audit_path, agent_gateway=None, agent_cle
             if principal.tenant != rec.tenant:
                 # Cross-tenant access must be indistinguishable from a missing report.
                 raise ApiError(404, 'NOT_FOUND', 'Report unavailable')
-            auth.authorize(principal, 'investigation:read', rec.tenant, district or rec.geography, profile=profile)
+            auth.authorize(principal, 'investigation:read', rec.tenant, district or rec.geography, profile=current_profile())
             try:
                 body, media_type = store.export(report_id, version, principal, format,
-                                                artifacts=artifact_store(), profile=profile)
+                                                artifacts=artifact_store(), profile=current_profile())
             except ReportAccessDenied:
                 audit_event(principal.subject, 'report.export_denied', {
                     'report_id': report_id, 'version': version, 'format': format,
@@ -375,20 +598,26 @@ def create_app(verifier, catalog_path, audit_path, agent_gateway=None, agent_cle
         if 'platform_admin' not in principal.roles and 'admin' not in principal.roles:
             raise ApiError(403, 'FORBIDDEN', 'Admin permission required for MFA toggle')
 
+    def _require_demo_reader(profile: ProfileConfig):
+        """Any signed-in principal may read demo toggles; production exposes nothing."""
+        if not profile.admin_mfa_toggle:
+            raise ApiError(403, 'ADMIN_TOGGLE_NOT_ALLOWED', 'Demo controls are not available for this profile')
 
+
+    @app.get('/v1/admin/mfa/status')
     @app.get('/admin/mfa/status')
     async def mfa_status(request: Request):
         """Get current MFA status for admin panel."""
-        profile = get_config()
-        principal = request.state.principal
-        _require_admin(principal, profile)
+        profile = current_profile()
+        _require_demo_reader(profile)
         return auth.get_mfa_status(profile)
 
 
+    @app.post('/v1/admin/mfa/toggle')
     @app.post('/admin/mfa/toggle')
     async def mfa_toggle(request: Request, body: MfaToggleRequest):
         """Admin toggle to enable/disable MFA (HACKATHON_DEMO only)."""
-        profile = get_config()
+        profile = current_profile()
         principal = request.state.principal
         _require_admin(principal, profile)
         result = auth.set_mfa_enabled(body.enabled, profile)
@@ -396,10 +625,65 @@ def create_app(verifier, catalog_path, audit_path, agent_gateway=None, agent_cle
             raise ApiError(403, 'ADMIN_TOGGLE_FAILED', result['error'])
         return result
 
+
+    class BypassToggleRequest(BaseModel):
+        model_config = ConfigDict(extra='forbid')
+        bypass_independent_statistician: bool | None = None
+        bypass_human_approvals: bool | None = None
+        bypass_production_infra: bool | None = None
+        bypass_verification_gates: bool | None = None
+
+
+    @app.get('/v1/admin/bypass/status')
+    @app.get('/admin/bypass/status')
+    async def bypass_status(request: Request):
+        """Current demo bypass toggles (always fully disabled in production)."""
+        profile = current_profile()
+        _require_demo_reader(profile)
+        return {'profile': profile.name.value, 'bypass': profiles.get_bypass_status(profile)}
+
+
+    @app.post('/v1/admin/bypass/toggle')
+    @app.post('/admin/bypass/toggle')
+    async def bypass_toggle(request: Request, body: BypassToggleRequest):
+        """Flip one or more demo bypass toggles without restarting the demo."""
+        profile = current_profile()
+        principal = request.state.principal
+        _require_admin(principal, profile)
+        requested = {k: v for k, v in body.model_dump().items() if v is not None}
+        if not requested:
+            raise ApiError(422, 'NO_TOGGLE', 'Provide at least one bypass toggle')
+        for name, enabled in requested.items():
+            result = profiles.set_bypass(name, enabled, profile)
+            if not result['success']:
+                raise ApiError(403, 'BYPASS_TOGGLE_FAILED', result['error'])
+        return {'success': True, 'bypass': profiles.get_bypass_status(profile)}
+
     return app
 
 
 def configured_app():
+    # Local development secrets stay server-side. Deployment environment values
+    # take precedence; load only engine/provider settings from the ignored file.
+    # In particular, never import the unrelated personal Supabase access token.
+    try:
+        from dotenv import dotenv_values
+        env_file = Path(__file__).resolve().parents[2] / '.env.local'
+        allowed = {'IREME_AUTH_ISSUER', 'IREME_AUTH_AUDIENCE', 'IREME_JWKS_URL', 'IREME_CATALOG_DB',
+                   'IREME_JOBS_DB', 'IREME_REPORTS_DB', 'IREME_ARTIFACTS_DIR', 'IREME_AGENT_CLEARANCE',
+                   'IREME_CORS_ORIGINS', 'IREME_PROFILE'}
+        if env_file.is_file():
+            selected = []
+            for line in env_file.read_text(encoding='utf-8').splitlines(keepends=True):
+                name = line.lstrip().removeprefix('export ').split('=', 1)[0].strip()
+                if name in allowed or re.fullmatch(r'(?:GROQ|NVIDIA|OLLAMA)_API_KEY(?:_[2-9])?', name):
+                    selected.append(line)
+            local_values = dotenv_values(stream=StringIO(''.join(selected)), encoding='utf-8')
+            for name, value in local_values.items():
+                if value is not None:
+                    os.environ.setdefault(name, value)
+    except ImportError:
+        pass
     required = ('IREME_AUTH_ISSUER', 'IREME_AUTH_AUDIENCE', 'IREME_JWKS_URL', 'IREME_CATALOG_DB', 'IREME_JOBS_DB')
     if any(not os.environ.get(name) for name in required):
         raise RuntimeError('Governed API identity and persistence configuration required')
@@ -410,7 +694,15 @@ def configured_app():
         from .gateway import Gateway, default_providers
         from .gateway_http import http_transport
         gateway = Gateway(default_providers(), http_transport, dict(os.environ))
-    return create_app(verifier, os.environ['IREME_CATALOG_DB'], os.environ['IREME_JOBS_DB'],
-                      agent_gateway=gateway, agent_clearance=os.environ.get('IREME_AGENT_CLEARANCE') or None,
-                      report_path=os.environ.get('IREME_REPORTS_DB') or None,
-                      artifact_path=os.environ.get('IREME_ARTIFACTS_DIR') or None)
+    app = create_app(verifier, os.environ['IREME_CATALOG_DB'], os.environ['IREME_JOBS_DB'],
+                     agent_gateway=gateway, agent_clearance=os.environ.get('IREME_AGENT_CLEARANCE') or None,
+                     report_path=os.environ.get('IREME_REPORTS_DB') or None,
+                     artifact_path=os.environ.get('IREME_ARTIFACTS_DIR') or None,
+                     open_demo=os.environ.get('IREME_OPEN_DEMO') == '1')
+    origins = [value.strip() for value in os.environ.get('IREME_CORS_ORIGINS', '').split(',') if value.strip()]
+    if not origins:
+        origins = ['http://localhost:5173', 'http://127.0.0.1:5173']
+    app.add_middleware(CORSMiddleware, allow_origins=origins, allow_methods=['GET', 'POST', 'OPTIONS'],
+                       allow_headers=['Authorization', 'Content-Type', 'Idempotency-Key'],
+                       expose_headers=['X-Trace-Id', 'Content-Disposition'], max_age=600)
+    return app

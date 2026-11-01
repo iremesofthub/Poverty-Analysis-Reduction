@@ -3,7 +3,8 @@ import { Bar, BarChart, CartesianGrid, LabelList, ResponsiveContainer, Tooltip, 
 import Card from "@/components/analyst/Card";
 import { Basis, Legend, Segmented, ViewTable } from "@/components/analyst/TrendBits";
 import { DASHBOARD_SOURCES, FINANCIAL_ACCESS_NATIONAL } from "@/data/dashboardEvidence";
-import { ACCESS_DISTRICTS } from "@/data/dashboardTrends";
+import { mapFinancialAccessRows, selectCompleteNationalAccessStrand, selectDistrictAccess } from "@/data/financialInclusion";
+import { EvidenceError, EvidenceLoading, EvidenceMissing, useActiveEvidence } from "@/lib/useFinancialInclusionData";
 
 const SEGMENTS = FINANCIAL_ACCESS_NATIONAL.map((part) => ({ key: part.key, label: part.label, color: part.color }));
 const SORTS = { excluded: "Most excluded", banked: "Least banked" };
@@ -23,11 +24,15 @@ function Tip({ active = false, payload = [] }) {
 export default function DistrictAccessCard({ rows }) {
   const [sort, setSort] = useState("excluded");
   const [showAll, setShowAll] = useState(false);
+  const evidence = useActiveEvidence();
   const names = useMemo(() => new Set(rows.map((row) => row.name)), [rows]);
-  const data = useMemo(() => ACCESS_DISTRICTS.filter((row) => names.has(row.name)).map((row) => ({ name: row.name, sampleAdults: row.sampleAdults, excludedPrinted: row.excludedPrinted, ...row.published }))
-    .sort((a, b) => (sort === "excluded" ? b.excluded - a.excluded || a.banked - b.banked : a.banked - b.banked)), [names, sort]);
+  const dbDistricts = useMemo(() => selectDistrictAccess(evidence.observations), [evidence.observations]);
+  const national = useMemo(() => mapFinancialAccessRows(selectCompleteNationalAccessStrand(evidence.observations)?.rows || []), [evidence.observations]);
+  const data = useMemo(() => (dbDistricts || []).filter((row) => names.has(row.name)).map((row) => ({ name: row.name, sampleAdults: row.sampleAdults, excludedPrinted: row.excludedPrinted, ...row.published }))
+    .sort((a, b) => (sort === "excluded" ? b.excluded - a.excluded || a.banked - b.banked : a.banked - b.banked)), [dbDistricts, names, sort]);
   const visible = showAll ? data : data.slice(0, 10);
   const lead = data[0];
+  const nationalText = national.length ? national.map((row) => `${row.label.toLowerCase()} ${row.value}%`).join(", ") : "not available";
 
   return (
     <Card
@@ -35,9 +40,13 @@ export default function DistrictAccessCard({ rows }) {
       subtitle="See how adults in each district use financial services."
       info="Each bar is 100 adults in that district from FinScope 2024. Every adult is counted once, in the first group that applies: bank services, then other formal services, then informal services only, then none. Figures are NISR's published district results, rounded to whole numbers. District samples are about 400 to 850 adults, so small differences between districts are not meaningful."
       aiInsight={lead ? `${lead.name} has the largest share of adults using no financial service (${lead.excluded}%) among the districts shown. District samples are small.` : "No district is selected."}
-      aiContext={`NISR FinScope Rwanda 2024, Figure 13 (published district Access Strand, percent of adults, whole numbers). Mutually exclusive groups: bank services, other formal not banked, informal only, excluded. Districts shown: ${data.map((row) => `${row.name}: banked ${row.banked}%, other formal ${row.otherFormal}%, informal only ${row.informalOnly}%, excluded ${row.excluded}%`).join("; ")}. National: banked 22%, other formal 70%, informal only 4%, excluded 4%. Each district sample is about 400 to 850 adults. This is not linked to the poverty survey household by household. Source: ${DASHBOARD_SOURCES.financial}.`}
+      aiContext={`NISR FinScope Rwanda 2024, Figure 13 (published district Access Strand, percent of adults, whole numbers). Mutually exclusive groups: bank services, other formal not banked, informal only, excluded. Districts shown: ${data.map((row) => `${row.name}: banked ${row.banked}%, other formal ${row.otherFormal}%, informal only ${row.informalOnly}%, excluded ${row.excluded}%`).join("; ")}. National: ${nationalText}. Each district sample is about 400 to 850 adults. This is not linked to the poverty survey household by household. Source: ${DASHBOARD_SOURCES.financial}.`}
       inlineHelp
     >
+      {(evidence.isLoading || evidence.isError || !dbDistricts) && (
+        evidence.isLoading ? <EvidenceLoading label="district figures" /> : evidence.isError ? <EvidenceError /> : <EvidenceMissing label="The approved district dataset" />
+      )}
+      {!evidence.isLoading && !evidence.isError && dbDistricts && <>
       <Basis />
       <Segmented label="Order of districts" value={sort} onChange={setSort} options={Object.entries(SORTS).map(([key, label]) => ({ key, label }))} />
       <div className="mt-3"><Legend items={SEGMENTS} /></div>
@@ -63,6 +72,7 @@ export default function DistrictAccessCard({ rows }) {
       <p className="mt-3 border-t border-hairline pt-2 text-[10.5px] leading-relaxed text-[#8A94A6]">
         <a href={DASHBOARD_SOURCES.financial} target="_blank" rel="noreferrer" className="underline underline-offset-2">Source: Rwanda FinScope 2024, Figure 13</a> · adults aged 16+. Whole-number rounding means a row can total 99 to 101. Nyarugenge's excluded share is not printed in the report and is shown as the remainder.
       </p>
+      </>}
     </Card>
   );
 }

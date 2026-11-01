@@ -26,6 +26,13 @@ function Eicv3Note() {
 const kind = (label = "") => label.startsWith("Clear improvement") ? "improve" : label.startsWith("Clear worsening") ? "worsen" : label.startsWith("Possible") ? (label.includes("worsening") ? "worsen" : "improve") : "none";
 const signed = (value) => `${value > 0 ? "+" : ""}${value.toFixed(1)}`;
 
+// One string per series, used both for the drawn legend and for the chart's textual alternative, so a
+// reader who cannot see the lines can still match each number to the line it belongs to.
+const OLD_SERIES = "Old method (published)";
+const CURRENT_SERIES = "Current method (2016/17 modelled by NISR)";
+const seriesSpoken = (key) => NATIONAL_LINE.filter((item) => item[key] !== undefined && item[key] !== null)
+  .map((item) => `${item.period} ${item[key]}`).join("; ");
+
 export default function TrendChangeCard({ rows }) {
   const [period, setPeriod] = useState("2013_14_to_2016_17");
   const [showAll, setShowAll] = useState(false);
@@ -49,7 +56,7 @@ export default function TrendChangeCard({ rows }) {
     >
       <Basis />
       <Segmented label="Period shown by district" value={period} onChange={(key) => { setPeriod(key); setShowAll(false); }} options={Object.entries(TREND_PERIODS).map(([key, value]) => ({ key, label: value.label }))} />
-      <div className="mt-3" role="img" aria-label={`National poverty: ${NATIONAL_LINE.map((item) => `${item.period} ${item.oldMethod ?? ""}${item.oldMethod && item.currentMethod ? " old method, " : ""}${item.currentMethod ?? ""}`).join("; ")}`}>
+      <div className="mt-3" role="img" aria-label={`National poverty rate as two lines. ${OLD_SERIES}: ${seriesSpoken("oldMethod")}. ${CURRENT_SERIES}: ${seriesSpoken("currentMethod")}.`}>
         <ResponsiveContainer width="100%" height={150}>
           <LineChart data={NATIONAL_LINE} margin={{ top: 8, right: 16, bottom: 0, left: -18 }}>
             <CartesianGrid vertical={false} stroke="#EDF1F7" />
@@ -57,8 +64,8 @@ export default function TrendChangeCard({ rows }) {
             <YAxis domain={[0, 60]} ticks={[0, 20, 40, 60]} tickFormatter={(value) => `${value}%`} tick={{ fontSize: 10, fill: "#8A94A6" }} axisLine={false} tickLine={false} />
             <Tooltip formatter={(value, name) => [`${value}%`, name]} contentStyle={tooltipStyle} />
             <ChartLegend iconType="plainline" wrapperStyle={{ fontSize: 10.5, color: "#425466" }} />
-            <Line type="linear" dataKey="oldMethod" name="Old method (published)" stroke="#A3ADBD" strokeWidth={2} dot={{ r: 4, fill: "#A3ADBD", stroke: "#fff", strokeWidth: 2 }} isAnimationActive={false} />
-            <Line type="linear" dataKey="currentMethod" name="Current method (2016/17 modelled by NISR)" stroke="#635BFF" strokeWidth={2} dot={{ r: 4, fill: "#635BFF", stroke: "#fff", strokeWidth: 2 }} isAnimationActive={false} />
+            <Line type="linear" dataKey="oldMethod" name={OLD_SERIES} stroke="#A3ADBD" strokeWidth={2} dot={{ r: 4, fill: "#A3ADBD", stroke: "#fff", strokeWidth: 2 }} isAnimationActive={false} />
+            <Line type="linear" dataKey="currentMethod" name={CURRENT_SERIES} stroke="#635BFF" strokeWidth={2} dot={{ r: 4, fill: "#635BFF", stroke: "#fff", strokeWidth: 2 }} isAnimationActive={false} />
           </LineChart>
         </ResponsiveContainer>
       </div>

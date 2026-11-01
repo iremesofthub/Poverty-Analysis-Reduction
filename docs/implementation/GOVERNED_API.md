@@ -66,8 +66,16 @@ only where explicitly permitted, `national_scope=true`. User metadata grants no
 authority. Review/publish authorization requires `aal2` and a subject different
 from the author. No reviewer signatures or grants are created automatically.
 
-Still required: production Postgres and object-store adapters, durable Temporal
-activities, create/resume worker API, certified fact and report lifecycle routes,
-hosted OIDC/JWKS rotation/MFA validation, revocation operations, ingress quotas,
-browser integration, and deployed security/operations evidence. Legacy local UI
-and artifact export paths are not yet protected by this service.
+The local reference API exposes `POST /v1/investigations`, `GET /v1/jobs/{run_id}`,
+and `POST /v1/investigations/{run_id}/resume` for the registered EICV7 poverty
+headcount workflow. Jobs use an in-process FastAPI background worker and local
+SQLite checkpoint/audit stores. Creation requires a current permission and
+registered indicator definition; the worker rechecks permission and source
+hashes before processing. Results remain restricted drafts and create no
+certified facts.
+
+Still required for production: Postgres and object-store adapters, durable
+Temporal activities, certified fact and report lifecycle routes, hosted
+OIDC/JWKS rotation/MFA validation, revocation operations, ingress quotas,
+deployed security/operations evidence, and protection or removal of legacy local
+UI and artifact export paths.

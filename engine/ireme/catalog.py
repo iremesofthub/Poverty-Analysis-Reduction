@@ -9,10 +9,12 @@ from __future__ import annotations
 import hashlib
 import json
 import sqlite3
+import time
 from datetime import datetime, timezone
 
 from .contracts import validate
 from . import retention
+from .sqlite_support import enable_wal
 
 
 class RevisionConflict(ValueError):
@@ -38,33 +40,59 @@ def aware_date(value):
     return parsed
 
 
+SCHEMA = '''
+  CREATE TABLE IF NOT EXISTS revisions(
+    tenant TEXT NOT NULL, kind TEXT NOT NULL, entity TEXT NOT NULL, version TEXT NOT NULL,
+    payload TEXT NOT NULL, sha256 TEXT NOT NULL, actor TEXT NOT NULL, created TEXT NOT NULL,
+    PRIMARY KEY(tenant,kind,entity,version));
+  CREATE TABLE IF NOT EXISTS edges(
+    tenant TEXT NOT NULL, parent_kind TEXT NOT NULL, parent TEXT NOT NULL, parent_version TEXT NOT NULL,
+    child_kind TEXT NOT NULL, child TEXT NOT NULL, child_version TEXT NOT NULL,
+    metadata TEXT NOT NULL, sha256 TEXT NOT NULL,
+    PRIMARY KEY(tenant,parent_kind,parent,parent_version,child_kind,child,child_version));
+  CREATE TRIGGER IF NOT EXISTS revision_no_update BEFORE UPDATE ON revisions
+    BEGIN SELECT RAISE(ABORT,'immutable revision'); END;
+  CREATE TRIGGER IF NOT EXISTS revision_no_delete BEFORE DELETE ON revisions
+    BEGIN SELECT RAISE(ABORT,'immutable revision'); END;
+  CREATE TRIGGER IF NOT EXISTS edge_no_update BEFORE UPDATE ON edges
+    BEGIN SELECT RAISE(ABORT,'immutable lineage'); END;
+  CREATE TRIGGER IF NOT EXISTS edge_no_delete BEFORE DELETE ON edges
+    BEGIN SELECT RAISE(ABORT,'immutable lineage'); END;
+'''
+
+
+def connect(path):
+    """Open the catalog, retrying only transient lock contention.
+
+    The analyst console reads permissions, indicators, and runs in parallel, so a
+    cold database can be initialised by several connections at once. SQLite
+    reports that race as ``database is locked`` instead of waiting for the DDL.
+    Retry briefly so a first page load never shows a spurious 500; any other
+    failure still surfaces immediately.
+    """
+    for attempt in range(6):
+        db = sqlite3.connect(path, timeout=30)
+        try:
+            db.execute('PRAGMA foreign_keys=ON')
+            enable_wal(db)
+            db.executescript(SCHEMA)
+            return db
+        except sqlite3.OperationalError as exc:
+            db.close()
+            if 'locked' not in str(exc) and 'busy' not in str(exc):
+                raise
+            if attempt == 5:
+                raise
+            time.sleep(0.05 * (2 ** attempt))
+    raise AssertionError('unreachable')
+
+
 class Catalog:
     def __init__(self, path, tenant: str, principal: str):
         if not tenant or not principal:
             raise PermissionError('Tenant and authenticated principal required')
         self.tenant, self.principal = tenant, principal
-        self.db = sqlite3.connect(path, timeout=30)
-        self.db.execute('PRAGMA foreign_keys=ON')
-        self.db.execute('PRAGMA journal_mode=WAL')
-        self.db.executescript('''
-          CREATE TABLE IF NOT EXISTS revisions(
-            tenant TEXT NOT NULL, kind TEXT NOT NULL, entity TEXT NOT NULL, version TEXT NOT NULL,
-            payload TEXT NOT NULL, sha256 TEXT NOT NULL, actor TEXT NOT NULL, created TEXT NOT NULL,
-            PRIMARY KEY(tenant,kind,entity,version));
-          CREATE TABLE IF NOT EXISTS edges(
-            tenant TEXT NOT NULL, parent_kind TEXT NOT NULL, parent TEXT NOT NULL, parent_version TEXT NOT NULL,
-            child_kind TEXT NOT NULL, child TEXT NOT NULL, child_version TEXT NOT NULL,
-            metadata TEXT NOT NULL, sha256 TEXT NOT NULL,
-            PRIMARY KEY(tenant,parent_kind,parent,parent_version,child_kind,child,child_version));
-          CREATE TRIGGER IF NOT EXISTS revision_no_update BEFORE UPDATE ON revisions
-            BEGIN SELECT RAISE(ABORT,'immutable revision'); END;
-          CREATE TRIGGER IF NOT EXISTS revision_no_delete BEFORE DELETE ON revisions
-            BEGIN SELECT RAISE(ABORT,'immutable revision'); END;
-          CREATE TRIGGER IF NOT EXISTS edge_no_update BEFORE UPDATE ON edges
-            BEGIN SELECT RAISE(ABORT,'immutable lineage'); END;
-          CREATE TRIGGER IF NOT EXISTS edge_no_delete BEFORE DELETE ON edges
-            BEGIN SELECT RAISE(ABORT,'immutable lineage'); END;
-        ''')
+        self.db = connect(path)
 
     def close(self):
         self.db.close()
@@ -124,6 +152,46 @@ class Catalog:
         return self._insert('permission', permission_id, '1', {'dataset_id': dataset_id,
             'dataset_version': dataset_version, 'dataset_sha256': dataset['sha256'],
             'purposes': sorted(set(purposes)), 'starts': starts, 'expires': expires, 'evidence_sha256': evidence_sha256})
+
+    def permissions(self, at=None):
+        """Permission records for this tenant with validity and revocation state.
+
+        Only catalog metadata is returned; the licensed dataset itself is never read
+        here. Each payload is re-hashed so a tampered revision surfaces as an
+        integrity error instead of being offered to the analyst.
+        """
+        at = at or datetime.now(timezone.utc)
+        rows = self.db.execute("SELECT entity, payload, sha256 FROM revisions "
+                               "WHERE tenant=? AND kind='permission' ORDER BY entity", (self.tenant,)).fetchall()
+        revoked = {row[0] for row in self.db.execute(
+            "SELECT entity FROM revisions WHERE tenant=? AND kind='revocation'", (self.tenant,))}
+        out = []
+        for entity, payload, checksum in rows:
+            value = json.loads(payload)
+            if digest(value) != checksum:
+                raise CatalogIntegrityError('Catalog revision hash mismatch')
+            out.append({'permission_id': entity,
+                        'dataset_id': value['dataset_id'],
+                        'dataset_version': value['dataset_version'],
+                        'purposes': value['purposes'],
+                        'starts': value['starts'],
+                        'expires': value['expires'],
+                        'revoked': entity in revoked,
+                        'active': entity not in revoked and aware_date(value['starts']) <= at < aware_date(value['expires'])})
+        return out
+
+    def indicators(self):
+        """Registered indicator definitions available to this tenant (metadata only)."""
+        rows = self.db.execute("SELECT entity, version, payload, sha256 FROM revisions "
+                               "WHERE tenant=? AND kind='indicator' ORDER BY entity, version", (self.tenant,)).fetchall()
+        out = []
+        for entity, version, payload, checksum in rows:
+            value = json.loads(payload)
+            if digest(value) != checksum:
+                raise CatalogIntegrityError('Catalog revision hash mismatch')
+            out.append({'indicator_id': entity, 'definition_version': version,
+                        'unit': value.get('unit'), 'sha256': checksum})
+        return out
 
     def revoke(self, permission_id, reason):
         self.get('permission', permission_id, '1')

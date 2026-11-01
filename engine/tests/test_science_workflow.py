@@ -1,6 +1,7 @@
 """Real calculation with fixture permissions. No actual licence/signoff is invented."""
 import hashlib
 import json
+import os
 import sys
 import tempfile
 import unittest
@@ -47,7 +48,9 @@ class ScienceWorkflow(unittest.TestCase):
             self.run_science()
         self.assertEqual(self.jobs.conn().execute('SELECT count(*) FROM runs').fetchone()[0], 0)
 
-    @unittest.skipUnless(data_eicv7.available() and r_reference.rscript_path(), 'Real archive and R required')
+    @unittest.skipUnless(os.environ.get('IREME_ENABLE_REAL_MICRODATA_TESTS') == '1'
+                         and data_eicv7.available() and r_reference.rscript_path(),
+                         'Explicit real-microdata test opt-in, archive, and R required')
     def test_real_governed_run_resume_lineage_and_revocation(self):
         self.setup_definition(hashlib.sha256(data_eicv7.zip_path().read_bytes()).hexdigest())
         self.catalog.indicator(self.definition)

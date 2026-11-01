@@ -8,16 +8,20 @@ import GovMembersDb from "@/components/government/GovMembersDb";
 import { useDatabaseSession } from "@/lib/memberApi";
 import { GovBeneficiaries, GovIssues, GovOverview, GovProblems, GovRequests } from "@/components/government/GovTabs";
 import { useDemoAuth } from "@/lib/DemoAuthContext";
+import { useAuth } from "@/lib/AuthContext";
 import { leaderScope, useCooperatives } from "@/lib/cooperatives";
 import { GOV_TABS, areaProblems, areaRecords } from "@/lib/govArea";
 import { visibleIssues, useGovIssues } from "@/lib/govIssues";
 import { actorFrom, useActionRequests } from "@/lib/actionRequests";
 import { BENEFICIARIES } from "@/data/programme";
+import { useTranslation } from "react-i18next";
 
 export default function GovernmentPanel() {
+  const { t } = useTranslation();
   const { data: dbReady } = useDatabaseSession();
   const { demoUser } = useDemoAuth();
-  const scope = leaderScope(demoUser);
+  const { profile } = useAuth();
+  const scope = leaderScope(demoUser, profile);
   const [params] = useSearchParams();
   const tab = GOV_TABS.some((item) => item.id === params.get("tab")) ? params.get("tab") : "overview";
   const [person, setPerson] = useState(null);
@@ -35,7 +39,7 @@ export default function GovernmentPanel() {
   return (
     <div className="pb-14">
       <PageHeader
-        title="Government"
+        title={t("pageTitles.government")}
         badge={
           <span className="hidden items-center gap-1.5 rounded-full border border-hairline px-2 py-[3px] text-[11px] text-sub sm:inline-flex">
             {scope.label || area.district}

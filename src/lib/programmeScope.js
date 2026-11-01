@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { AGENTS, AWARDS, BENEFICIARIES, JOBS, PAYMENTS, PROGRAMMES, SKILLS_CATALOG } from "@/data/programme";
 import { useDemoAuth, useRole } from "@/lib/DemoAuthContext";
+import { useAuth } from "@/lib/AuthContext";
 
 // One programme account sees one programme. The platform admin sees all of them, or picks one to look at.
 // In this demo the rule is enforced in the browser; real enforcement must happen on a server.
@@ -15,6 +16,7 @@ const readChoice = () => {
 export function useProgrammeScope() {
   const role = useRole();
   const { demoUser } = useDemoAuth();
+  const { profile } = useAuth();
   const isAdmin = role === "platform_admin";
   const [choice, setChoiceState] = useState(readChoice);
   useEffect(() => {
@@ -29,7 +31,14 @@ export function useProgrammeScope() {
   }, []);
 
   // An owner account that is not linked to a programme gets nothing, never everything.
-  const own = role === "programme_owner" ? (PROGRAMMES.some((item) => item.name === demoUser?.programme) ? demoUser.programme : null) : null;
+  // In Supabase mode the programme lives on the protected profile row (profile.programme);
+  // in local demo mode it lives on demoUser.programme.
+  const own = role === "programme_owner"
+    ? (() => {
+        const programme = profile?.programme ?? demoUser?.programme ?? null;
+        return PROGRAMMES.some((item) => item.name === programme) ? programme : null;
+      })()
+    : null;
   const programme = isAdmin ? choice : own;
   const everything = isAdmin && programme === ALL_PROGRAMMES;
   const linked = isAdmin || Boolean(own);

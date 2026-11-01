@@ -1,76 +1,205 @@
 {
   "common": {
-    "save": "",
-    "cancel": "",
-    "close": "",
-    "back": "",
-    "next": "",
-    "loading": "",
-    "logOut": "",
-    "settings": "",
-    "takeTour": "",
-    "programMember": "",
-    "programMembers": ""
+    "save": "Bika",
+    "cancel": "Hagarika",
+    "close": "Funga",
+    "back": "Subira",
+    "next": "Komeza",
+    "loading": "Birategurwa…",
+    "logOut": "Sohoka",
+    "settings": "Igenamiterere",
+    "takeTour": "Reba uko bikora",
+    "programMember": "Umunyamuryango wa gahunda",
+    "programMembers": "Abanyamuryango ba gahunda"
   },
   "navGroups": {
-    "Analysis": "",
-    "Operations": "",
-    "People": "",
-    "Insights": "",
-    "Data": ""
+    "Analysis": "Isesengura",
+    "Operations": "Imikorere",
+    "People": "Abantu",
+    "Insights": "Ubushishozi",
+    "Data": "Amakuru"
   },
   "nav": {
-    "other-analysis": "",
-    "poverty-analysis": "",
-    "investigations": "",
-    "nst2": "",
-    "evidence": "",
-    "programmes": "",
-    "cooperatives": "",
-    "cooperative": "",
-    "government": "",
-    "agent": "",
-    "beneficiary": "",
-    "jobs": "",
-    "map": "",
-    "datasets": "",
-    "ussd-control": ""
+    "other-analysis": "Isesengura rindi",
+    "poverty-analysis": "Isesengura ry'ubukene",
+    "ai-engine": "Moteri y'ubwenge buhangano",
+    "nst2": "Intego z'igihugu",
+    "financial-inclusion": "Kwinjira muri serivisi z'imari",
+    "data-upload": "Kohereza amakuru",
+    "evidence": "Ibyavuye muri gahunda",
+    "programmes": "Imicungire ya gahunda",
+    "cooperatives": "Amakoperative",
+    "cooperative": "Imicungire ya koperative",
+    "government": "Ubutegetsi",
+    "agent": "Akazi ko mu murima",
+    "beneficiary": "Umunyamuryango wa gahunda",
+    "jobs": "Shaka akazi",
+    "map": "Ikarita y'uturere",
+    "datasets": "Amakuru n'uburyo yakusanyijwe",
+    "ussd-control": "Igenzura rya USSD",
+    "account-requests": "Ubusabe bwa konti"
+  },
+  "pageTitles": {
+    "districtMap": "Ikarita y'uturere",
+    "programmeManagement": "Imicungire ya gahunda",
+    "cooperatives": "Amakoperative",
+    "cooperative": "Koperative",
+    "government": "Ubutegetsi",
+    "agent": "Imbonerahamwe y'umukozi",
+    "jobs": "Shaka akazi",
+    "datasets": "Amakuru n'uburyo yakusanyijwe"
+  },
+  "nst2": {
+    "title": "Intego z'igihugu",
+    "intro": "Intego z'u Rwanda",
+    "question": "Ese tugeze ku ntego za 2024–2029?",
+    "latest": "Imibare iheruka",
+    "latestHelp": "Imibare y'ingenzi y'ubushakashatsi buheruka",
+    "targets": "Intego",
+    "targetsHelp": "Intego zemewe za 2024–2029",
+    "pending": "intego itarashyirwaho",
+    "social": "Impinduka mu mibereho",
+    "socialNote": "Ubukene n'uburinzi bw'abaturage",
+    "economic": "Impinduka mu bukungu",
+    "economicNote": "Kwinjira muri serivisi z'imari",
+    "governance": "Imiyoborere ihindura",
+    "governanceNote": "Ibimenyetso n'ishyirwa mu bikorwa",
+    "poverty": "Igipimo cy'ubukene",
+    "extreme": "Ubukene bukabije",
+    "vupPoor": "Abakene bitabira VUP",
+    "vupAll": "Ingo zivuga ko zitabira VUP",
+    "formal": "Bari muri serivisi zemewe",
+    "excluded": "Batari muri serivisi z'imari",
+    "banked": "Bakoresha banki",
+    "informal": "Serivisi zitari izemewe gusa",
+    "districts": "Uturere dufite amakuru",
+    "critical": "Uturere dufite ubukene bwa 40%+ na VUP iri munsi ya 15% mu bakene",
+    "programmes": "Gahunda zikurikiranwa",
+    "traceability": "Gukurikirana ubwishyu",
+    "perHousehold": "Kuri buri rugo",
+    "targetsText": "Intego z'igihugu, ibipimo by'itangiriro n'imyaka y'ingenzi bizashyirwa hano dosiye y'ibipimo bya NST2 imaze kongerwamo. Imibare iriho iva muri dosiye za NISR."
+  },
+  "analyst": {
+    "dashboard": "Imbonerahamwe y'isesengura ry'ubukene",
+    "dashboardHelp": "Iyi mbonerahamwe igaragaza uturere dukeneye ubufasha ugereranyije ubukene bwaho n'ikigereranyo cy'igihugu.",
+    "howToRead": "Uko usoma uru rupapuro",
+    "openAi": "Fungura moteri y'ubwenge",
+    "trends": "Impinduka n'ibikorwa by'imari",
+    "trendsHelp": "Ubukene mu gihe, abavuye mu bukene, n'uko serivisi z'imari zijyana n'ubukene ku karere."
+  },
+  "beneficiaryPage": {
+    "title": "Inyungu zanjye",
+    "helpTitle": "Inyungu zanjye",
+    "help": "Uru rupapuro rugaragaza ubwishyu, gahunda wanditswemo n'ubufasha. Reba igihe ubwishyu butaha buzabera kandi utange ikirego igihe hari ikibazo.",
+    "heading": "Inyungu zawe",
+    "subheading": "Reba ubwishyu na gahunda zawe",
+    "nextPayment": "Ubwishyu butaha",
+    "date": "Itariki",
+    "amount": "Amafaranga",
+    "status": "Imiterere",
+    "scheduled": "Byateganyijwe",
+    "paymentHistory": "Amateka y'ubwishyu",
+    "paid": "Byishyuwe",
+    "programmes": "Gahunda zawe",
+    "enrolled": "Wanditswe",
+    "since": "Kuva {{date}} · butaha {{next}}",
+    "submitComplaint": "Tanga ikirego",
+    "replyWithin": "Turagusubiza mu minsi 5 y'akazi",
+    "received": "Ikirego cyawe twakibonye. Umukozi wo mu murima azakuvugisha.",
+    "subject": "Umutwe",
+    "describe": "Sobanura ikibazo",
+    "send": "Ohereza"
+  },
+  "cooperativesPage": {
+    "helpTitle": "Amakoperative",
+    "help": "Amakoperative ni amatsinda y'abaturage akorera hamwe kugira ngo abone amafaranga. Ushobora gusaba kuyinjiramo mu karere kawe. Koperative ni yo ifata icyemezo cyo kukwakira, ukabona igisubizo kuri uru rupapuro.",
+    "adminNotice": "Urimo kureba amakoperative yose nka {{name}}. Abanyamuryango basaba kuyinjiramo kuri uru rupapuro; abayobozi b'akarere n'umurenge bayabona mu gice cy'Ubutegetsi, naho buri koperative ikiyobora.",
+    "all": "Amakoperative yose",
+    "inDistrict": "Amakoperative yo mu {{district}}",
+    "yourSector": "Umurenge wawe",
+    "yourCooperative": "Koperative yawe",
+    "ledBy": "iyobowe na {{name}}",
+    "yourRequest": "Ubusabe bwo kwinjira muri {{name}} buracyategereje icyemezo cya koperative. Wasabye {{when}}.",
+    "withdraw": "Kuramo",
+    "notYet": "Ntabwo uraba muri koperative. Hitamo imwe hasi usabe kuyinjiramo.",
+    "requestSent": "Ubusabe bwo kwinjira muri {{name}} bwoherejwe. Koperative izafata icyemezo.",
+    "noDistrict": "Nta makoperative yanditswe mu karere kawe. Baza umuyobozi w'umurenge.",
+    "members": "abanyamuryango",
+    "askJoin": "Saba kuyinjiramo",
+    "member": "Uri umunyamuryango",
+    "sent": "Ubusabe bwoherejwe",
+    "full": "Yuzuye",
+    "notAccepting": "Ntabwo yakira abanyamuryango",
+    "inCooperative": "Usanzwe muri koperative",
+    "pendingElsewhere": "Ubusabe buracyategereje ahandi",
+    "accepting": "Yakira abanyamuryango",
+    "yourRequests": "Ubusabe bwawe",
+    "asked": "Wasabye {{when}}",
+    "withSector": "Ku muyobozi w'umurenge",
+    "withCoop": "Ku koperative",
+    "requests": "Ubusabe bwawe",
+    "askedBy": "Wasabye {{when}}",
+    "decidedBy": "cyemejwe na {{name}}"
+  },
+  "coopHealth": {
+    "Going well": "Biragenda neza",
+    "Struggling": "Ifite imbogamizi",
+    "Inactive": "Ntidukora"
+  },
+  "programme": {
+    "tabs": {
+      "overview": "Incamake",
+      "requests": "Ubusabe bw'isesengura",
+      "cooperatives": "Amakoperative",
+      "agents": "Abakozi",
+      "beneficiaries": "Abanyamuryango ba gahunda",
+      "jobs": "Akazi no gushaka abakozi",
+      "payments": "Ubwishyu",
+      "skills": "Ubumenyi n'amahugurwa"
+    }
   },
   "tour": {
-    "stepOf": "",
-    "close": "",
-    "back": "",
-    "skip": "",
-    "next": "",
-    "finish": "",
-    "welcome": "",
+    "stepOf": "Intambwe {{current}} kuri {{total}}",
+    "close": "Funga uru rugendo",
+    "back": "Subira",
+    "skip": "Simbuka",
+    "next": "Komeza",
+    "finish": "Rangiza",
+    "welcome": "Murakaza neza kuri {{page}}",
     "intro": {
-      "other-analysis": "",
-      "poverty-analysis": "",
-      "investigations": "",
-      "nst2": "",
-      "evidence": "",
-      "programmes": "",
-      "cooperatives": "",
-      "cooperative": "",
-      "government": "",
-      "agent": "",
-      "beneficiary": "",
-      "jobs": "",
-      "map": "",
-      "datasets": "",
-      "ussd-control": ""
+      "other-analysis": "Uru rupapuro rugaragaza isesengura ry'ubufasha, imikorere ya gahunda n'ibikenewe mu turere.",
+      "poverty-analysis": "Uru rupapuro rugaragaza umubare w'abantu bakennye mu bice bitandukanye by'u Rwanda.",
+      "ai-engine": "Hitamo akarere ureke moteri y'ubwenge isuzume amakuru n'amasoko.",
+      "nst2": "Uru rupapuro rugaragaza intego z'u Rwanda n'urwego tugezeho.",
+      "financial-inclusion": "Uru rupapuro rutandukanya imibare ya BNR iva ku batanga serivisi n'ubushakashatsi bwa NISR FinScope kugira ngo ibipimo bitavanganywa.",
+      "data-upload": "Ohereza amakuru yemewe y'incamake nk'inyandiko itegereje kugenzurwa. Umuyobozi wa platform arayagenzura mbere y'uko ahindura imbonerahamwe.",
+      "evidence": "Uru rupapuro rugaragaza uko gahunda z'ubufasha zikora n'abantu zagezeho.",
+      "programmes": "Aha ni ho ucunga abakozi bo mu murima, abanyamuryango, akazi n'ubwishyu.",
+      "cooperatives": "Shaka amakoperative akwegereye kandi usabe kuyinjiramo.",
+      "cooperative": "Aha ucunga koperative yawe, ubusabe bwo kuyinjiramo n'abanyamuryango.",
+      "government": "Uru rupapuro rugaragaza imibare y'aho ukorera n'abakeneye ubufasha.",
+      "agent": "Uru rupapuro rugaragaza akazi kawe k'uyu munsi n'ibibazo watanga.",
+      "beneficiary": "Aha ni ho ubona umuryango wawe, amakoperative, umukozi n'ubwisungane mu kwivuza.",
+      "jobs": "Uru rupapuro rugaragaza akazi ushobora gusaba n'uko ubusabe bwawe buhagaze.",
+      "map": "Ikarita igaragaza uturere 30 tw'u Rwanda. Kanda akarere umenye byinshi.",
+      "datasets": "Reba aho imibare iva, ibyo ipima n'ibyo idashobora kuvuga.",
+      "ussd-control": "Reba abakoresha serivisi ya telefoni n'ibibazo bihari. Buri gikorwa kibikwa.",
+      "account-requests": "Suzuma ubusabe bwa konti za gahunda, amakoperative n'abanyamuryango. Huza buri busabe na record iboneye mbere yo kubwemeza."
     },
     "menu": {
-      "title": "",
-      "text": "",
-      "textAlone": ""
+      "title": "Menyu",
+      "text": "Koresha iyi menyu ujye ku rundi rupapuro: {{pages}}.",
+      "textAlone": "Koresha iyi menyu uhindure amapaji."
     },
     "again": {
-      "title": "",
-      "text": ""
+      "title": "Ongera urebe uru rugendo",
+      "text": "Kanda Reba uko bikora igihe cyose. Uzabona ibisobanuro by'urupapuro urimo."
     },
     "steps": {
+      "account-request-list": {
+        "title": "Suzuma ubusabe",
+        "text": "Huza usaba na record ye nyayo, hanyuma wemeze cyangwa wange ubusabe."
+      },
       "analysis-filter": {
         "title": "",
         "text": ""
@@ -96,6 +225,38 @@
         "text": ""
       },
       "analysis-finance": {
+        "title": "",
+        "text": ""
+      },
+      "financial-intro": {
+        "title": "",
+        "text": ""
+      },
+      "financial-guide": {
+        "title": "",
+        "text": ""
+      },
+      "financial-bnr": {
+        "title": "",
+        "text": ""
+      },
+      "financial-finscope": {
+        "title": "",
+        "text": ""
+      },
+      "upload-intro": {
+        "title": "",
+        "text": ""
+      },
+      "upload-form": {
+        "title": "",
+        "text": ""
+      },
+      "upload-preview": {
+        "title": "",
+        "text": ""
+      },
+      "upload-review": {
         "title": "",
         "text": ""
       },
@@ -358,320 +519,461 @@
     }
   },
   "settings": {
-    "title": "",
-    "intro": "",
+    "title": "Igenamiterere",
+    "intro": "Umwirondoro wawe, ururimi, imenyesha n'umutekano.",
     "tabs": {
-      "profile": "",
-      "language": "",
-      "notifications": "",
-      "security": ""
+      "profile": "Umwirondoro",
+      "language": "Ururimi",
+      "notifications": "Imenyesha",
+      "security": "Umutekano"
     },
     "profile": {
-      "title": "",
-      "name": "",
-      "role": "",
-      "area": "",
-      "email": "",
-      "note": ""
+      "title": "Umwirondoro wawe",
+      "name": "Amazina",
+      "role": "Uruhare",
+      "area": "Aho ukorera",
+      "email": "Imeyili",
+      "note": "Amakuru yawe acungwa n'umuyobozi wawe."
     },
     "language": {
-      "title": "",
-      "help": "",
-      "saved": "",
-      "previewTitle": "",
-      "date": "",
-      "number": "",
-      "money": ""
+      "title": "Ururimi",
+      "help": "Porogaramu yose ihinduka ako kanya. Ibyo wahisemo bibikwa ku mwirondoro wawe.",
+      "saved": "Ururimi rwabitswe.",
+      "previewTitle": "Uko ibintu bigaragara muri uru rurimi",
+      "date": "Itariki",
+      "number": "Umubare",
+      "money": "Amafaranga"
     },
     "notifications": {
-      "title": "",
-      "help": "",
-      "app": "",
-      "sms": "",
-      "email": ""
+      "title": "Imenyesha",
+      "help": "Hitamo uko wamenyeshwa ibyerekeye ingendo, amatora n'ubwishyu.",
+      "app": "Muri porogaramu",
+      "sms": "SMS kuri telefoni yanjye",
+      "email": "Imeyili"
     },
     "security": {
-      "title": "",
-      "help": "",
-      "signOut": ""
+      "title": "Umutekano",
+      "help": "Sohoka kuri iki gikoresho. Amagambo banga acungwa na serivisi yo kwinjira.",
+      "signOut": "Sohoka"
     }
   },
   "member": {
-    "panel": "",
-    "noSession": "",
-    "noMember": "",
+    "panel": "Umunyamuryango wa gahunda",
+    "noSession": "Ongera winjire kugira ngo ubone amakuru yawe.",
+    "noMember": "Iyi konti ntiyahujwe n'umwirondoro w'umunyamuryango.",
     "tabs": {
-      "overview": "",
-      "profile": "",
-      "cooperatives": "",
-      "space": "",
-      "agent": "",
-      "insurance": ""
+      "overview": "Inyungu",
+      "profile": "Njye n'umuryango wanjye",
+      "cooperatives": "Amakoperative yanjye",
+      "space": "Umwanya wa koperative",
+      "agent": "Umukozi n'ingendo zanjye",
+      "insurance": "Ubwisungane mu kwivuza"
     },
     "profile": {
-      "title": "",
-      "name": "",
-      "phone": "",
-      "area": "",
-      "household": "",
-      "householdOf": "",
-      "category": "",
-      "programme": "",
-      "services": "",
-      "servicesHelp": "",
-      "protection": "",
-      "family": "",
-      "familyHelp": "",
-      "noFamily": "",
-      "age": ""
+      "title": "Amakuru yanjye",
+      "name": "Amazina",
+      "phone": "Telefoni",
+      "area": "Aho ntuye",
+      "household": "Urugo",
+      "householdOf": "Abantu {{count}}",
+      "category": "Icyiciro cy'ubwishingizi",
+      "programme": "Gahunda",
+      "services": "Serivisi",
+      "servicesHelp": "Ibyo wowe n'umuryango wawe mubona",
+      "protection": "Uburinzi",
+      "family": "Umuryango wanjye",
+      "familyHelp": "Abagize urugo rwawe",
+      "noFamily": "Nta bagize umuryango banditswe.",
+      "age": "imyaka {{count}}"
     },
     "coops": {
-      "switcher": "",
-      "none": "",
-      "readOnly": "",
-      "yourRole": "",
-      "memberCount": "",
-      "founded": "",
-      "votingStarts": "",
-      "votingEnds": "",
-      "leaders": "",
-      "leadersHelp": "",
-      "members": "",
+      "switcher": "Koperative",
+      "none": "Ntabwo uraba mu koperative.",
+      "readOnly": "Ushobora kubona ibyo umunyamuryango abona, ariko ntushobora kongera, guhindura cyangwa gukuraho abantu.",
+      "yourRole": "Uruhare rwanjye",
+      "memberCount": "Abanyamuryango",
+      "founded": "Yashinzwe",
+      "votingStarts": "Amatora atangira",
+      "votingEnds": "Amatora arangira",
+      "leaders": "Abayobozi",
+      "leadersHelp": "Abayobozi ba koperative n'uko wabageraho",
+      "members": "Abanyamuryango bose ({{count}})",
       "roles": {
-        "member": "",
-        "secretary": "",
-        "treasurer": "",
-        "vice_leader": "",
-        "leader": ""
+        "member": "Umunyamuryango",
+        "secretary": "Umunyamabanga",
+        "treasurer": "Umubitsi",
+        "vice_leader": "Visi perezida",
+        "leader": "Umuyobozi"
       }
     },
     "space": {
-      "voteTitle": "",
-      "noElection": "",
-      "where": "",
-      "when": "",
+      "voteTitle": "Tora",
+      "noElection": "Nta matora ariho ubu.",
+      "where": "Aho gutorera",
+      "when": "Igihe cyo gutora",
       "state": {
-        "open": "",
-        "upcoming": "",
-        "closed": ""
+        "open": "Amatora aratangiye",
+        "upcoming": "Amatora ntaratangira",
+        "closed": "Amatora yarangiye"
       },
       "cannot": {
-        "upcoming": "",
-        "closed": ""
+        "upcoming": "Uzatora igihe amatora azatangira.",
+        "closed": "Amatora yarangiye."
       },
-      "pick": "",
-      "voted": "",
-      "confirmTitle": "",
-      "confirmText": "",
-      "confirmVote": "",
-      "announcements": "",
-      "meetings": "",
-      "contacts": "",
-      "memberList": "",
-      "none": ""
+      "pick": "Hitamo umukandida umwe",
+      "voted": "Watoye. Murakoze.",
+      "confirmTitle": "Emeza itora ryawe",
+      "confirmText": "Ugiye gutorera {{name}}. Ushobora gutora rimwe gusa kandi ntushobora guhindura.",
+      "confirmVote": "Yego, tora",
+      "announcements": "Amakuru y'abayobozi",
+      "meetings": "Inama zigiye kuba",
+      "contacts": "Aho wabona abayobozi",
+      "memberList": "Reba urutonde rw'abanyamuryango",
+      "none": "Nta makuru arahari."
     },
     "agent": {
-      "title": "",
-      "help": "",
-      "none": "",
-      "phone": "",
-      "area": "",
+      "title": "Umukozi wanjye",
+      "help": "Umukozi ushinzwe wowe n'umuryango wawe",
+      "none": "Nta mukozi uragenerwa.",
+      "phone": "Telefoni",
+      "area": "Aho akorera",
       "proximity": {
-        "cell": "",
-        "sector": "",
-        "district": ""
+        "cell": "Akora mu kagari kawe",
+        "sector": "Akora mu murenge wawe",
+        "district": "Akora mu karere kawe"
       },
-      "visits": "",
-      "nextVisit": "",
-      "noVisits": "",
-      "purpose": "",
-      "prepare": "",
+      "visits": "Ingendo zanjye",
+      "nextVisit": "Urugendo rutaha: {{when}}",
+      "noVisits": "Nta ngendo ziteganyijwe.",
+      "purpose": "Impamvu",
+      "prepare": "Uko witegura",
       "status": {
-        "Scheduled": "",
-        "Done": "",
-        "Missed": "",
-        "Cancelled": ""
+        "Scheduled": "Byateganyijwe",
+        "Done": "Byarakozwe",
+        "Missed": "Byasigaye",
+        "Cancelled": "Byahagaritswe"
       },
-      "history": "",
+      "history": "Amateka y'umukozi",
       "reason": {
-        "auto_assigned": "",
-        "agent_unavailable": ""
+        "auto_assigned": "Byatanzwe na sisitemu",
+        "agent_unavailable": "Umukozi ntiyari ahari"
       }
     },
     "insurance": {
-      "title": "",
-      "none": "",
+      "title": "Ubwisungane mu kwivuza",
+      "none": "Nta makuru y'ubwishingizi y'uyu mwaka.",
       "status": {
-        "paid": "",
-        "partial": "",
-        "unpaid": ""
+        "paid": "Byishyuwe",
+        "partial": "Byishyuwe igice",
+        "unpaid": "Ntabwo byishyuwe"
       },
-      "overdue": "",
-      "due": "",
-      "paid": "",
-      "balance": "",
-      "dueDate": "",
-      "period": "",
-      "how": "",
-      "howHelp": "",
-      "calc": "",
+      "overdue": "Igihe cyo kwishyura cyarangiye kandi hari amafaranga asigaye.",
+      "due": "Amafaranga yo kwishyura",
+      "paid": "Ayishyuwe",
+      "balance": "Asigaye kwishyura",
+      "dueDate": "Yishyurwa mbere ya",
+      "period": "Igihe: {{start}} kugeza {{end}}",
+      "how": "Uko amafaranga abarwa",
+      "howHelp": "Biterwa n'icyiciro cyawe n'umubare w'abagize urugo",
+      "calc": "{{category}}: {{rate}} kuri buri muntu, abantu {{count}} = {{total}} ku mwaka.",
       "categories": {
-        "mutuelle_1": "",
-        "mutuelle_2": "",
-        "mutuelle_3": "",
-        "rama": ""
+        "mutuelle_1": "Ubwisungane, icyiciro cya 1",
+        "mutuelle_2": "Ubwisungane, icyiciro cya 2",
+        "mutuelle_3": "Ubwisungane, icyiciro cya 3",
+        "rama": "RAMA"
       }
     }
   },
   "gov": {
-    "membersHelp": "",
-    "search": "",
-    "noMembers": "",
-    "count": "",
-    "unpaidCount": "",
-    "sectorCell": "",
-    "who": "",
-    "agent": "",
-    "noLeaders": "",
-    "insurance": {
-      "title": "",
-      "any": "",
-      "paid": "",
-      "partial": "",
-      "unpaid": "",
-      "none": ""
+    "tabs": {
+      "overview": "Incamake",
+      "beneficiaries": "Abanyamuryango ba gahunda",
+      "problems": "Ibibazo by'ishyirwa mu bikorwa",
+      "reports": "Raporo zo mu murima",
+      "requests": "Ubusabe bwa gahunda",
+      "cooperatives": "Amakoperative"
     },
-    "area": "",
-    "coops": "",
-    "noCoop": "",
-    "family": ""
+    "membersHelp": "Abantu bari muri gahunda muri {{area}}. Ntubona abo hanze y'aho ukorera.",
+    "search": "Shakisha ukoresheje izina",
+    "noMembers": "Nta banyamuryango bahuye n'ibyo washatse.",
+    "count": "abantu {{count}}",
+    "unpaidCount": "Abanyamuryango {{count}} bafite ubwishingizi butarishyurwa.",
+    "sectorCell": "Umurenge · akagari",
+    "who": "Ninde n'aho atuye",
+    "agent": "Umukozi",
+    "noLeaders": "Nta bayobozi banditswe kuri iyi koperative.",
+    "insurance": {
+      "title": "Ubwisungane mu kwivuza",
+      "any": "Icyiciro icyo ari cyo cyose",
+      "paid": "Byishyuwe",
+      "partial": "Byishyuwe igice",
+      "unpaid": "Ntabwo byishyuwe",
+      "none": "Nta makuru"
+    },
+    "area": "Aho atuye",
+    "coops": "Amakoperative",
+    "noCoop": "Ntabwo ari muri koperative.",
+    "family": "Umuryango"
   },
   "agent360": {
-    "joined": "",
-    "basedOn": "",
-    "noApplication": "",
-    "history": "",
-    "work": "",
-    "members": "",
-    "visitsDone": "",
-    "note": "",
+    "joined": "Yinjiye",
+    "basedOn": "Itariki n'isaha by'ubusabe bwe",
+    "noApplication": "Nta busabe bw'uyu mukozi buri mu nyandiko.",
+    "history": "Amateka y'ubusabe",
+    "work": "Akazi",
+    "members": "Abanyamuryango ashinzwe",
+    "visitsDone": "Ingendo zakozwe",
+    "note": "Itariki yo kwinjira n'amateka biva mu nyandiko y'ubusabe bw'umukozi.",
     "status": {
-      "label": "",
-      "Submitted": "",
-      "Under review": "",
-      "Accepted": "",
-      "Rejected": ""
+      "label": "Imimerere",
+      "Submitted": "Byatanzwe",
+      "Under review": "Birimo gusuzumwa",
+      "Accepted": "Byemewe",
+      "Rejected": "Byanzwe"
     }
   },
   "ussd": {
-    "menu": "",
-    "back": "",
-    "bye": "",
-    "invalid": "",
-    "notRegistered": "",
-    "blocked": "",
-    "expired": "",
-    "tooMany": "",
-    "error": "",
-    "insurance": "",
-    "insuranceNone": "",
+    "menu": "Ireme: {{name}}\n1 Ubwishingizi\n2 Urugendo rutaha\n3 Umukozi wanjye\n4 Amatora\n5 Ururimi\n0 Sohoka",
+    "back": "0 Subira",
+    "bye": "Murakoze. Murabeho.",
+    "invalid": "Ihitamo si ryo.",
+    "notRegistered": "Iyi nimero ntiyanditswe nk'umunyamuryango wa gahunda.",
+    "blocked": "Iyi serivisi ntiyemerewe kuri iyi nimero.",
+    "expired": "Igihe cyarangiye. Ongera uhamagare.",
+    "tooMany": "Musabye kenshi. Ongera ugerageze mu munota umwe.",
+    "error": "Habaye ikibazo. Ongera ugerageze nyuma.",
+    "insurance": "Ubwishingizi: {{status}}\nKwishyura: {{due}}\nByishyuwe: {{paid}}\nYishyurwa mbere ya: {{date}}",
+    "insuranceNone": "Nta makuru y'ubwishingizi arahari.",
     "status": {
-      "paid": "",
-      "partial": "",
-      "unpaid": ""
+      "paid": "Byishyuwe",
+      "partial": "Byishyuwe igice",
+      "unpaid": "Ntabwo byishyuwe"
     },
-    "visit": "",
-    "visitNone": "",
-    "agent": "",
-    "agentNone": "",
-    "voting": "",
-    "votingNone": "",
+    "visit": "Urugendo rutaha:\n{{when}}\n{{purpose}}",
+    "visitNone": "Nta rugendo ruteganyijwe.",
+    "agent": "Umukozi wawe:\n{{name}}\n{{phone}}",
+    "agentNone": "Nta mukozi uragenerwa.",
+    "voting": "{{title}}\nAho: {{venue}}\nIgihe: {{from}} kugeza {{to}}\nImimerere: {{state}}\n{{voted}}",
+    "votingNone": "Nta matora akureba ariho ubu.",
     "state": {
-      "open": "",
-      "upcoming": "",
-      "closed": ""
+      "open": "Aratangiye",
+      "upcoming": "Ntaratangira",
+      "closed": "Yarangiye"
     },
-    "voted": "",
-    "notVoted": "",
-    "language": "",
-    "languageSaved": ""
+    "voted": "Watoye.",
+    "notVoted": "Ntabwo uratora.",
+    "language": "Ururimi\n1 Icyongereza\n2 Kinyarwanda",
+    "languageSaved": "Ururimi rwabitswe."
   },
   "ussdSim": {
-    "title": "",
-    "help": "",
-    "idle": "",
-    "dial": "",
-    "yourNumber": "",
-    "code": "",
-    "reply": "",
-    "send": "",
-    "cancel": "",
-    "timeLeft": "",
-    "timedOut": "",
-    "badCode": "",
-    "network": "",
-    "demoOnly": ""
+    "title": "Kigereranyo cya USSD",
+    "help": "Gerageza serivisi ya telefoni udakeneye umurongo. Abanyamuryango b'ikigereranyo gusa.",
+    "idle": "Hamagara {{code}} ukande Hamagara.",
+    "dial": "Hamagara",
+    "yourNumber": "Nimero ya telefoni",
+    "code": "Kode yo guhamagara",
+    "reply": "Igisubizo cyawe",
+    "send": "Ohereza",
+    "cancel": "Hagarika iki kiganiro",
+    "timeLeft": "Ikiganiro kirarangira mu masegonda {{seconds}} nta gisubizo",
+    "timedOut": "Ikiganiro cyarangiye. Ongera uhamagare.",
+    "badCode": "Ikibazo cy'itumanaho cyangwa kode si yo.",
+    "network": "Serivisi ntiyabonetse. Ongera ugerageze.",
+    "demoOnly": "Ikigereranyo gusa. Nimero nyazo ntizikorerwaho."
   },
   "ussdAdmin": {
-    "title": "",
-    "needAdmin": "",
-    "noData": "",
-    "noErrors": "",
-    "noSessions": "",
-    "noBlocked": "",
-    "noAudit": "",
+    "title": "Igenzura rya USSD",
+    "needAdmin": "Injira nk'umuyobozi kugira ngo ubone imikoreshereze ya USSD.",
+    "noData": "Nta makuru arahari.",
+    "noErrors": "Nta makosa.",
+    "noSessions": "Nta biganiro birahari.",
+    "noBlocked": "Nta nimero zahagaritswe.",
+    "noAudit": "Nta bikorwa birahari.",
     "stats": {
-      "total": "",
-      "today": "",
-      "active": "",
-      "timedOut": "",
-      "errors": "",
-      "blocked": ""
+      "total": "Ibiganiro",
+      "today": "Uyu munsi",
+      "active": "Biri gukorwa",
+      "timedOut": "Igihe cyarangiye",
+      "errors": "Amakosa",
+      "blocked": "Byahagaritswe"
     },
-    "byLanguage": "",
-    "byScreen": "",
-    "byScreenHelp": "",
-    "recentErrors": "",
-    "sessions": "",
-    "sessionsHelp": "",
+    "byLanguage": "Ururimi",
+    "byScreen": "Ibice bikunze gukoreshwa",
+    "byScreenHelp": "Bibazwe kuri buri busabe",
+    "recentErrors": "Amakosa aheruka",
+    "sessions": "Ibiganiro",
+    "sessionsHelp": "Nimero za telefoni zihishwe. Bivugururwa buri masegonda 10.",
     "col": {
-      "phone": "",
-      "member": "",
-      "language": "",
-      "path": "",
-      "status": "",
-      "source": "",
-      "lastSeen": ""
+      "phone": "Nimero",
+      "member": "Umunyamuryango",
+      "language": "Ururimi",
+      "path": "Inzira ya menyu",
+      "status": "Imimerere",
+      "source": "Aho bivuye",
+      "lastSeen": "Iheruka kuboneka"
     },
     "status": {
-      "active": "",
-      "ended": "",
-      "timed_out": "",
-      "blocked": "",
-      "error": ""
+      "active": "Irakora",
+      "ended": "Yarangiye",
+      "timed_out": "Igihe cyarangiye",
+      "blocked": "Yahagaritswe",
+      "error": "Ikosa"
     },
-    "errorsShort": "",
-    "end": "",
-    "block": "",
-    "unblock": "",
-    "blockedTitle": "",
-    "auditTitle": "",
-    "auditHelp": "",
-    "blockTitle": "",
-    "blockText": "",
-    "reason": "",
+    "errorsShort": "amakosa",
+    "end": "Soza",
+    "block": "Hagarika",
+    "unblock": "Kuraho ihagarikwa",
+    "blockedTitle": "Nimero zahagaritswe",
+    "auditTitle": "Igitabo cy'ubuyobozi",
+    "auditHelp": "Buri gikorwa gikorerwa hano kibikwa.",
+    "blockTitle": "Hagarika {{phone}}?",
+    "blockText": "Iyi nimero ntizakoresha serivisi ya USSD kugeza uyifunguye. Ikiganiro cyayo kirahagarara.",
+    "reason": "Impamvu (si ngombwa)",
     "actions": {
-      "end_session": "",
-      "block_number": "",
-      "unblock_number": ""
+      "end_session": "Yasoje ikiganiro",
+      "block_number": "Yahagaritse nimero",
+      "unblock_number": "Yakuyeho ihagarikwa rya nimero"
     }
   },
   "login": {
     "ussd": {
-      "title": "",
-      "text": "",
-      "open": "",
-      "admin": ""
+      "title": "Gerageza serivisi ya telefoni ya USSD",
+      "text": "Nta murongo wa telefoni ukenewe. Hamagara {{code}} muri iki kigereranyo ukoresheje nimero {{phone}}, ukande imibare kugira ngo unyure muri menyu.",
+      "open": "Fungura ikigereranyo cya USSD",
+      "admin": "Abayobozi: injira nka Platform Admin, hanyuma ufungure Igenzura rya USSD muri menyu urebe ibiganiro, amakosa n'ibikorwa."
+    }
+  },
+  "discover": {
+    "heading": "Menya ibyo Ireme Insight ikora",
+    "subheading": "Sobanukirwa ibimenyetso, gereranya amahitamo, ukurikirane ibikorwa.",
+    "tourEntry": "Fungura urugendo rw'ibikorwa",
+    "qualityLink": "Uko tugenzura imibare",
+    "verified": "Bigenzurwa gute?",
+    "close": "Funga",
+    "state": {
+      "calculated": "Bibarirwa hano · biracyasuzumwa",
+      "published": "Imibare yasohowe n'ikigo cya Leta",
+      "partial": "Igice kiraboneka gusa",
+      "demo": "Amakuru y'ikitegererezo",
+      "unavailable": "Ntibirakorwa"
+    },
+    "apiState": {
+      "present": "Iyi build yashyizweho aderesi ya API y'ubushakashatsi. Ibyo bivuze gushyiraho aderesi gusa: ibisubizo by'isuzuma, ipimwa cyangwa raporo bigaragara hano gusa iyo serivisi yasubije.",
+      "missing": "Iki gikorwa nta API y'ubushakashatsi ifite, bityo nta gikorwa, isuzuma cyangwa raporo bishobora kugaragara hano."
+    },
+    "field": {
+      "purpose": "Icyo bikorerwa",
+      "source": "Aho imibare ivamo",
+      "period": "Igihe amakuru agezeho",
+      "population": "Abayagaragaza",
+      "geography": "Aho ayagaragaza",
+      "denominator": "Umubare ugereranywaho",
+      "method": "Uburyo yakoreshejwe",
+      "resultKind": "Ubwoko bw'igisubizo",
+      "systemState": "Uko sisitemu imeze ubu",
+      "limitation": "Ibyo itabasha kwerekana",
+      "proof": "Ibyemeza muri iyi porogaramu"
+    },
+    "kind": {
+      "surveyEstimate": "Igipimo cy'ubushakashatsi kumwe n'ikigero cy'icyizere; ntabwo cyemejwe",
+      "publishedEstimate": "Igipimo cyasohowe n'ikindi kigo cya Leta",
+      "scenarioNotProduced": "Igereranyo ry'ibishobora kubaho · ntirirakorwa",
+      "demoRecord": "Ikirango cy'ikitegererezo · si igisubizo cyabonetse",
+      "noneProduced": "Nta gisubizo cyatanzwe"
+    },
+    "blocked": {
+      "roleNotPermitted": "Umwanya wawe ntushobora gufungura uru rupapuro.",
+      "noProgrammeAccess": "Abakora kuri gahunda ni bo bakira ibyifuzo. Umwanya wawe werekana aho bigeze ku mapaji y'isesengura, atari urutonde rw'ibikorwa.",
+      "noRulesLoaded": "Amategeko yemewe yo gutoranya VUP ntayabarizwa hano, bityo nta cyemezo cy'uburenganzira kigaragara.",
+      "noReferralView": "Uyu mwanya nta rubuga rw'amahirwe ufite. Gahunda n'abakozi bo mu murima ni bo babikurikirana.",
+      "noValidatedModel": "Nta moderi yemejwe ibarizwa hano, bityo nta mibare y'imikorere yerekanywa ku ntero iyo ari yo yose.",
+      "unknownFeature": "Iki gikorwa ntikibarizwa mu nyandiko y'ibikorwa.",
+      "supportCompareNotBuilt": "Nta mibare igereranya iboneka muri iyi verisiyo ku mwanya uwo ari wo wose: urupapuro rw'abasesenguzi ruvuga ibikenewe."
+    },
+    "financialNote": "Iyi page yerekana uburyo bwo kubona serivisi z'imari gusa. Ibipimo by'ubushobozi bwo kwihangira ikibazo cy'imari — amafaranga yabitswe, ubwishingizi bw'ingorane, cyangwa niba ingo zishobora kwishyura ikibazo kitunguranye — ntiboneka mu makuru yarinzwe, bityo nta gipimo cy'ubwo bushobozi kigaragara hano.",
+    "mini": {
+      "evidenceQuality": "Ubwiza bw'ibimenyetso",
+      "whatCanWeDo": "Twakorera iki hano?",
+      "fromAnalysisToAction": "Muva mu sesengura ujya mu bikorwa",
+      "compareOptions": "Gereranya amahitamo",
+      "exploreResilience": "Reba ubushobozi bwo kwihangira",
+      "understandModel": "Sobanukirwa moderi",
+      "notOnThisPage": "Nta cyemezo gifatirwa hano"
+    },
+    "tour": {
+      "title": "Urugendo rugufi",
+      "stepOf": "Intambwe {{current}} kuri {{total}}",
+      "notFound": "Igice ntikibarizwa ku rupapuro rwawe ubu. Kanda Komeza.",
+      "unavailable": {
+        "title": "Ntiboneka ku mwanya wawe",
+        "text": "Umwanya wawe ntushobora gufungura uru rupapuro, bityo urugendo ruhagarara aha aho kwerekana ko rurarangiye. {{reason}} Icyo urwo rupapuro rukora: {{summary}}"
+      },
+      "problem": {
+        "title": "Ikibazo n'aho amakuru ava",
+        "text": "Ireme Insight isubiza ikibazo kimwe cya NISR: ni uturere tuhe dufite ubukene bwinshi, kandi ni iki gikurikiraho? Imibare ngenderwaho iva mu nyandiko zemewe za NISR — ubushakashatsi bwa EICV7 2023/24 ku bukene, hamwe na FinScope n'amakuru y'abatanga serivisi z'imari. Nta gice na kimwe cyakuwe ku moderi."
+      },
+      "evidence": {
+        "title": "Icyizere cy'ibimenyetso",
+        "text": "Buri mubare w'akarere ugaragaza interali ya 95%, umubare w'ingo bazajweho n'urwego rw'icyizere. Iyo akarere kari mu nterali y'igihugu, rupapuro rivuga ko ritandukanye cyane n'u Rwanda aho kurutondeka. Amasoko, igihe, ababarirwa n'uburyo biboneka kuri Data & Methodology; aho imibare itandukanye n'iyasohotse hagaragazwa mu bisobanuro by'amakuru."
+      },
+      "compare": {
+        "title": "Kugereranya amahitamo mu mucyo",
+        "text": "Kugereranya uburyo bwo gufasha ku ngengo y'imari imwe ntibirashyirwaho mu buryo bwemejwe; iyi page yerekana ibyo bisabwa aho kwerekana imibare itariyo. Ibyo byazaboneka bizatangwa nk'ibigereranyo, bitari nk'ibyagezweho."
+      },
+      "action": {
+        "title": "Muva mu bimenyetso ujya mu bikorwa",
+        "text": "Iri ni urutonde rw'ibyifuzo: umusesengura arasaba kugenzurwa, umuyobozi wa gahunda akiyemera cyangwa akianga impamvu, umukozi wo mu murima akatangaza ibyabonywe, hanyuma igisubizo gisubira ku musesengura. Amakuru yose aha ni ay'ikitegererezo, ntabwo ari imibare y'imikorere ya gahunda."
+      },
+      "actionAnalyst": {
+        "text": "Abakora kuri gahunda bakira ibyifuzo muri panel yabo, itari iyo gufungura kuri wowe. Hano ubona aho ikifuzo kigeze hamwe n'ubukene bwabutanze, ari byo byumvikana ku musesengura w'igihugu."
+      },
+      "report": {
+        "title": "Ibyo raporo ishobora kwemeza",
+        "text": "Raporo, isuzuma no kuzohereza bikora inyuma ya API ifite amategeko. Iyo idahari, iyi page ibivuga ukuri aho kwerekana igisubizo cyangwa ikimenyetso cy'icyatsi. Buri raporo igumana imbibi zayo hafi y'uburyo bwo kuyohereza."
+      },
+      "finish": "Rangiza"
+    },
+    "feature": {
+      "evidence-check": {
+        "title": "Suzuma ibimenyetso",
+        "subtitle": "Reba aho umubare uvamo, uko wizewe, n'ibisaba isuzuma.",
+        "cta": "Reba ibimenyetso"
+      },
+      "support-compare": {
+        "title": "Gereranya uburyo bwo gufasha",
+        "subtitle": "Reba uburyo bushobora kugera ku ngo nyinshi ku ngengo y'imari imwe.",
+        "cta": "Gereranya amahitamo"
+      },
+      "resilience": {
+        "title": "Sobanukirwa ubushobozi bw'imari",
+        "subtitle": "Soma ibyo abantu bavuga ko bakoresha, utandukanye amasoko yombi, urebe n'ibikibura.",
+        "cta": "Reba ubushobozi bw'imari"
+      },
+      "action-tracking": {
+        "title": "Kurikirana igikorwa n'ibiva mu gikorwa",
+        "subtitle": "Reba uko ikifuzo gishingiye ku bimenyetso kigera ku gikorwa cya gahunda.",
+        "cta": "Kurikirana igikorwa"
+      },
+      "vup-rules": {
+        "title": "Sobanukirwa uko VUP yitoranya",
+        "subtitle": "Genzura ikifuzo hakurikijwe amategeko yasuzumwe, umuntu akaba ari we ufata umwanzuro.",
+        "cta": "Reba uko gutoranywa"
+      },
+      "referral-followup": {
+        "title": "Huza abantu n'amahirwe",
+        "subtitle": "Huza ubushobozi n'ibikenewe na serivisi zibikwiye, hanyuma ukurikirane.",
+        "cta": "Reba uko boherezwa"
+      },
+      "quality-checks": {
+        "title": "Uko tugenzura imibare",
+        "subtitle": "Soma isuzuma ry'imibare, kugereranya amasoko n'amakosa atarasubizwa.",
+        "cta": "Reba isuzuma ry'imibare"
+      },
+      "model-evaluation": {
+        "title": "Sobanukirwa moderi",
+        "subtitle": "Reba ibyavuye mu isuzuma, ukuringanira n'imbibi zayo.",
+        "cta": "Reba isuzuma rya moderi"
+      }
     }
   }
 }

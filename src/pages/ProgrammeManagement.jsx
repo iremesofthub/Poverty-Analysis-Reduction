@@ -13,8 +13,10 @@ import CooperativesTab from "@/components/programme/CooperativesTab";
 import { ALL_PROGRAMMES, useProgrammeScope } from "@/lib/programmeScope";
 import { PROGRAMMES } from "@/data/programme";
 import PanelGuide from "@/components/analyst/PanelGuide";
+import { useTranslation } from "react-i18next";
 
 export default function ProgrammeManagement() {
+  const { t } = useTranslation();
   const [params, setParams] = useSearchParams();
   const tab = params.get("tab") || "overview";
   const setTab = (id) => setParams(id === "overview" ? {} : { tab: id });
@@ -23,7 +25,7 @@ export default function ProgrammeManagement() {
   return (
     <div className="pb-14">
       <PageHeader
-        title="Programme Management"
+        title={t("pageTitles.programmeManagement")}
         badge={
           <span className="hidden items-center gap-1.5 rounded-full border border-hairline px-2 py-[3px] text-[11px] text-sub sm:inline-flex">
             {scope.everything ? "All programmes" : scope.programme || "No programme"} · {scope.agents.length} agents · {scope.beneficiaries.length} beneficiaries
