@@ -33,8 +33,8 @@ export const ANALYST_DASHBOARD_FEATURES = ["evidence-check", "support-compare", 
 export const ROUTE_ACCESS = {
   "/": ["platform_admin", "nisr_analyst"],
   "/other-analysis": ["platform_admin", "nisr_analyst"],
-  // Every signed-in panel can open the governed research workspace (matches the router in src/App.jsx).
-  "/ai-engine": ["platform_admin", "nisr_analyst", "programme_owner", "cooperative", "gov_district", "gov_sector", "gov_cell", "field_agent", "beneficiary", "job_applicant"],
+  // The governed research workspace is reserved for the analysts and the platform admin (matches the router in src/App.jsx).
+  "/ai-engine": ["platform_admin", "nisr_analyst"],
   // The legacy investigation link is a redirect to the AI Engine, kept so old bookmarks still land somewhere honest.
   "/investigations": ["platform_admin", "nisr_analyst"],
   "/nst2": ["platform_admin", "nisr_analyst"],
@@ -170,17 +170,9 @@ const FEATURES = [
     reviewOutstanding: true,
     dependsOnApi: true,
     destinations: {
+      // The checks live in the governed workspace, which the analysts and the platform admin own;
+      // every other role is refused there and this feature says why instead of redirecting.
       default: { href: "/datasets", kind: "route" },
-      // Roles the /datasets guard refuses still get the checks themselves: the AI Engine evidence
-      // screen shows the recomputed values, the evidence chain and the outstanding review points.
-      programme_owner: { href: "/ai-engine?section=evidence", kind: "route" },
-      cooperative: { href: "/ai-engine?section=evidence", kind: "route" },
-      gov_district: { href: "/ai-engine?section=evidence", kind: "route" },
-      gov_sector: { href: "/ai-engine?section=evidence", kind: "route" },
-      gov_cell: { href: "/ai-engine?section=evidence", kind: "route" },
-      field_agent: { href: "/ai-engine?section=evidence", kind: "route" },
-      beneficiary: { href: "/ai-engine?section=evidence", kind: "route" },
-      job_applicant: { href: "/ai-engine?section=evidence", kind: "route" },
     },
     proof: [
       { label: "Official source register", href: "/datasets" },

@@ -195,12 +195,12 @@ test("every walkthrough anchor is a marker a component really renders", () => {
 });
 
 test("a role with a thin panel gets an explanation for the steps it cannot open", () => {
-  // The AI Engine workspace is open to every signed-in role, so even the narrowest role can follow the
-  // evidence and report steps there. The other three steps stay unavailable and must explain why.
+  // The AI Engine workspace is reserved for the analysts and the platform admin, so the narrowest role
+  // can follow no walkthrough step and each step must explain why instead of linking somewhere refused.
   const steps = judgeTour("job_applicant");
-  assert.deepEqual(steps.filter((item) => item.available).map((item) => item.id), ["evidence", "report"]);
+  assert.deepEqual(steps.filter((item) => item.available).map((item) => item.id), []);
   const unavailable = steps.filter((item) => !item.available);
-  assert.equal(unavailable.length, 3);
+  assert.equal(unavailable.length, 5);
   for (const step of unavailable) assert.equal(step.href, null);
   assert.ok(english.discover.tour.unavailable.text.includes("{{reason}}"));
   assert.ok(english.discover.tour.unavailable.text.includes("{{summary}}"));

@@ -59,7 +59,7 @@ export const NAV_GROUPS = [
     items: [
       { label: "Poverty Analysis", to: "/", icon: BarChart3, roles: ["platform_admin", "nisr_analyst"] },
       { label: "Other Analysis", to: "/other-analysis", icon: BarChart3, sub: true, roles: ["platform_admin", "nisr_analyst"] },
-      { label: "AI Engine", to: "/ai-engine", icon: BrainCircuit, roles: Object.keys(ROLES) },
+      { label: "AI Engine", to: "/ai-engine", icon: BrainCircuit, roles: ["platform_admin", "nisr_analyst"] },
       { label: "National Goals", to: "/nst2", icon: Target, roles: ["platform_admin", "nisr_analyst"] },
       { label: "Financial Inclusion", to: "/financial-inclusion", icon: Landmark, roles: ["platform_admin", "nisr_analyst"] },
       { label: "Programme Results", to: "/evidence", icon: ClipboardCheck, roles: ["platform_admin"] },

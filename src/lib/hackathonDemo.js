@@ -14,7 +14,8 @@
  */
 
 // Panels that only present published statistics, so an unauthenticated visitor may browse them in demo mode.
-export const DEMO_PANEL_ROUTES = ["/", "/other-analysis", "/nst2", "/financial-inclusion", "/datasets", "/map", "/ai-engine"];
+// The AI Engine is not here: it is a governed workspace reserved for the analysts and the platform admin.
+export const DEMO_PANEL_ROUTES = ["/", "/other-analysis", "/nst2", "/financial-inclusion", "/datasets", "/map"];
 
 // Panels that must never open for a demo visitor, asserted against the allowlist in `hackathonDemo.test.mjs`.
 export const DEMO_PANEL_DENYLIST = [

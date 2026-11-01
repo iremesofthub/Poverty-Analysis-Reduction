@@ -75,10 +75,10 @@ const AuthenticatedApp = () => {
         </Route>
         <Route element={<RoleGuard roles={Object.keys(ROLES)} />}>
           <Route path="/settings" element={<Settings />} />
-          {/* Every signed-in panel can open the governed research workspace, not only the analysts. */}
-          <Route path="/ai-engine" element={<AIEngine />} />
         </Route>
         <Route element={<RoleGuard roles={["platform_admin", "nisr_analyst"]} />}>
+          {/* The governed research workspace is reserved for the analysts and the platform admin. */}
+          <Route path="/ai-engine" element={<AIEngine />} />
           <Route path="/other-analysis" element={<OtherAnalysis />} />
           <Route path="/investigations" element={<LegacyInvestigationRedirect />} />
           <Route path="/nst2" element={<Nst2Indicators />} />
